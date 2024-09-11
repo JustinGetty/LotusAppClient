@@ -4,28 +4,27 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
 
-
-# You can make your code fail to compile if it uses deprecated APIs.
-# In order to do so, uncomment the following line.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
-
+# Specify the sources (now in the Sources/ folder)
 SOURCES += \
-    main.cpp \
-    mainwindow.cpp \
-    networkmanager.cpp
+    Sources/main.cpp \
+    Sources/mainwindow.cpp \
+    Sources/networkmanager.cpp
 
+# Specify the headers (now in the Headers/ folder)
 HEADERS += \
-    mainwindow.h \
-    networkmanager.h
+    Headers/mainwindow.h \
+    Headers/networkmanager.h
 
+# Specify the forms (now in the Forms/ folder)
 FORMS += \
-    mainwindow.ui
+    Forms/mainwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
+# Resources (if needed, adjust the path if these have moved as well)
 DISTFILES += \
     Resources/send_message_icon.jpeg \
     Resources/send_message_icon.png

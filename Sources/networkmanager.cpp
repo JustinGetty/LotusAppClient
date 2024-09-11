@@ -1,4 +1,4 @@
-#include "networkmanager.h"
+#include "Headers/networkmanager.h"
 #include <iostream>
 #include <string>
 #include <netinet/in.h>
@@ -8,7 +8,7 @@
 #include <thread>
 #include <ctime>
 #include <vector>
-#include "mainwindow.h"
+#include "Headers/mainwindow.h"
 #include <QString>
 std::mutex clients_mutex;
 std::vector<int> client_sockets;

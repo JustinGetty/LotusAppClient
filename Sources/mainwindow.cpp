@@ -1,6 +1,6 @@
-#include "mainwindow.h"
+#include "Headers/mainwindow.h"
 #include "ui_mainwindow.h"
-#include "networkmanager.h"
+#include "Headers/networkmanager.h"
 #include <QLabel>
 #include <QString>
 #include <QKeyEvent>
