@@ -23,6 +23,34 @@
 */
 
 
+std::string get_status(int client_socket) {
+    char buffer[30];
+    std::string status_message;
+
+    while (true) {
+        ssize_t status_bytes = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
+        if (status_bytes < 0) {
+
+            return "";
+        } else if (status_bytes == 0) {
+            std::cerr << "Connection closed by the server." << std::endl;
+            return "";
+        }
+        buffer[status_bytes] = '\0';
+
+        status_message += buffer;
+
+        if (status_message.find('|') != std::string::npos) { //npos represents end of string
+            break;
+        }
+    }
+
+    std::cerr << "Finished receiving status message: " << status_message << std::endl;
+
+    // Return the message up to the delimiter
+    return status_message.substr(0, status_message.find('|'));
+}
+
 void MainWindow::onAppendMessageToTextBrowser(const QString& message) {
     ui->textBrowser->append(message);
 }
@@ -111,6 +139,9 @@ void MainWindow::on_create_account_button_clicked()
         //eventually this needs to be actual client socket and not hard coded
         networkManager->send_message(networkManager->get_client_socket(), user_pw_q, "new_user");
 
+        std::cout << "Verifying creation" << std::endl;
+        std::string account_create_status = get_status(networkManager->get_client_socket());
+        std::cout << "Account Cretion Status" << account_create_status << std::endl;
     }
     else
     {
@@ -118,33 +149,6 @@ void MainWindow::on_create_account_button_clicked()
     }
 }
 
-std::string get_status(int client_socket) {
-    char buffer[1024];
-    std::string status_message;
-
-    while (true) {
-        ssize_t status_bytes = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
-        if (status_bytes < 0) {
-
-            return "";
-        } else if (status_bytes == 0) {
-            std::cerr << "Connection closed by the server." << std::endl;
-            return "";
-        }
-        buffer[status_bytes] = '\0';
-
-        status_message += buffer;
-
-        if (status_message.find('|') != std::string::npos) { //npos represents end of string
-            break;
-        }
-    }
-
-    std::cerr << "Finished receiving status message: " << status_message << std::endl;
-
-    // Return the message up to the delimiter
-    return status_message.substr(0, status_message.find('|'));
-}
 
 
 void MainWindow::on_login_account_button_clicked()
@@ -186,8 +190,8 @@ MainWindow::MainWindow(QWidget *parent)
     if (!ui->login_window) std::cerr << "login_window is null!" << std::endl;
     if (!ui->main_window) std::cerr << "main_window is null!" << std::endl;
 
-    ui->create_account->hide();
-    ui->login_window->show();
+    ui->create_account->show();
+    ui->login_window->hide();
     ui->main_window->hide();
     networkManager = new networkmanager();
     int client_socket = networkManager->get_client_socket();
