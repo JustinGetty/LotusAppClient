@@ -17,6 +17,8 @@
 #include <arpa/inet.h>
 #include <thread>
 #include <ctime>
+#include <QTimer>
+
 
 /*
  TODO: add sql to server siddeeee
@@ -129,6 +131,12 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 
 void MainWindow::on_create_account_button_clicked()
 {
+    //prevent the double messages
+    if (isProcessing) {
+        return; // Prevent re-execution
+    }
+    isProcessing = true;
+
     if ((!ui->create_user_input->text().isEmpty()) && (!ui->create_pwd_input->text().isEmpty()))
     {
         std::string username = (ui->create_user_input->text()).toStdString();
@@ -141,18 +149,27 @@ void MainWindow::on_create_account_button_clicked()
 
         std::cout << "Verifying creation" << std::endl;
         std::string account_create_status = get_status(networkManager->get_client_socket());
-        std::cout << "Account Cretion Status" << account_create_status << std::endl;
+        std::cout << "Account Creation Status" << account_create_status << std::endl;
     }
     else
     {
         qDebug() << "Error, please enter a valid username and password";
     }
+
+    QTimer::singleShot(1000, this, [this]() { isProcessing = false; });
+
 }
 
 
 
 void MainWindow::on_login_account_button_clicked()
 {
+    if (isLoginProcessing) {
+        return;  // Prevent double click handling
+    }
+
+    isLoginProcessing = true;
+
     if ((!ui->user_login_name->text().isEmpty()) && (!ui->user_login_password->text().isEmpty()))
     {
         std::string username = (ui->user_login_name->text()).toStdString();
@@ -174,6 +191,7 @@ void MainWindow::on_login_account_button_clicked()
     std::string status_msg = get_status(networkManager->get_client_socket());
     std::cout << "Verification status: " + status_msg << std::endl;
 
+    QTimer::singleShot(1000, this, [this]() { isLoginProcessing = false; });
 }
 
 
@@ -208,6 +226,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->Send_Message_Button, &QPushButton::clicked, this, &MainWindow::on_Send_Message_Button_clicked);
     connect(this, &MainWindow::appendMessageToTextBrowser, this, &MainWindow::onAppendMessageToTextBrowser);
     connect(ui->uploadButton, &QPushButton::clicked, this, &MainWindow::on_uploadButton_clicked);
+    disconnect(ui->create_account_button, &QPushButton::clicked, this, &MainWindow::on_create_account_button_clicked);
     connect(ui->create_account_button, &QPushButton::clicked, this, &MainWindow::on_create_account_button_clicked);
     connect(ui->login_account_button, &QPushButton::clicked, this, &MainWindow::on_login_account_button_clicked);
 

@@ -29,6 +29,8 @@ private:
     Ui::MainWindow *ui;
     QString user_message;
     networkmanager *networkManager;
+    bool isProcessing = false;
+    bool isLoginProcessing = false;
 
 protected:
     //void keyPressEvent(QKeyEvent *event) override;  // Declaration in the header file

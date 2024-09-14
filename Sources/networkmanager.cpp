@@ -109,6 +109,8 @@ void networkmanager::send_message(int client_socket, const QByteArray &data, con
     const char *raw_data = buffer.constData();
     size_t buffer_size = buffer.size();
 
+    qDebug() << "Sending message of type: " << type;
+
     if (send(client_socket, raw_data, buffer_size, 0) == -1)
     {
         qDebug() << "Error sending image";
