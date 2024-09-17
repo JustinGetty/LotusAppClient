@@ -699,8 +699,8 @@ background-color: blue;
      <widget class="QWidget" name="widget_2" native="true">
       <property name="geometry">
        <rect>
-        <x>91</x>
-        <y>15</y>
+        <x>137</x>
+        <y>25</y>
         <width>958</width>
         <height>734</height>
        </rect>
@@ -1005,6 +1005,37 @@ color: #000000;
 	background-color: #ffffff;
 	color: #000000;
 }</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_5">
+       <property name="geometry">
+        <rect>
+         <x>340</x>
+         <y>472</y>
+         <width>190</width>
+         <height>33</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Create account:</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="switch_to_create_account_btn">
+       <property name="geometry">
+        <rect>
+         <x>456</x>
+         <y>475</y>
+         <width>116</width>
+         <height>32</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton {
+	color: #000000;
+}</string>
+       </property>
+       <property name="text">
+        <string>Create Account</string>
        </property>
       </widget>
      </widget>

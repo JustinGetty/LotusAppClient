@@ -188,12 +188,18 @@ void MainWindow::on_login_account_button_clicked()
 
     //get status of login
     std::cout << "Verifying..." << std::endl;
+
     std::string status_msg = get_status(networkManager->get_client_socket());
     std::cout << "Verification status: " + status_msg << std::endl;
 
     QTimer::singleShot(1000, this, [this]() { isLoginProcessing = false; });
 }
 
+void MainWindow::switch_to_create_account_view()
+{
+    ui->login_window->hide();
+    ui->create_account->show();
+}
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -208,8 +214,8 @@ MainWindow::MainWindow(QWidget *parent)
     if (!ui->login_window) std::cerr << "login_window is null!" << std::endl;
     if (!ui->main_window) std::cerr << "main_window is null!" << std::endl;
 
-    ui->create_account->show();
-    ui->login_window->hide();
+    ui->create_account->hide();
+    ui->login_window->show();
     ui->main_window->hide();
     networkManager = new networkmanager();
     int client_socket = networkManager->get_client_socket();
@@ -229,6 +235,7 @@ MainWindow::MainWindow(QWidget *parent)
     disconnect(ui->create_account_button, &QPushButton::clicked, this, &MainWindow::on_create_account_button_clicked);
     connect(ui->create_account_button, &QPushButton::clicked, this, &MainWindow::on_create_account_button_clicked);
     connect(ui->login_account_button, &QPushButton::clicked, this, &MainWindow::on_login_account_button_clicked);
+    connect(ui->switch_to_create_account_btn, &QPushButton::clicked, this, &MainWindow::switch_to_create_account_view);
 
 
     ui->textBrowser->setFocus();
