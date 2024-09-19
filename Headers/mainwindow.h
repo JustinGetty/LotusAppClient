@@ -25,6 +25,8 @@ private slots:
     void on_create_account_button_clicked();
     void on_login_account_button_clicked();
     void switch_to_create_account_view();
+    void switch_to_login_account_view();
+    void switch_to_main_view_after_login();
 
 private:
     Ui::MainWindow *ui;

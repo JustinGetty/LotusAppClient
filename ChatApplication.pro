@@ -8,12 +8,14 @@ CONFIG += c++17
 SOURCES += \
     Sources/main.cpp \
     Sources/mainwindow.cpp \
-    Sources/networkmanager.cpp
+    Sources/networkmanager.cpp \
+    Sources/user.cpp
 
 # Specify the headers (now in the Headers/ folder)
 HEADERS += \
     Headers/mainwindow.h \
-    Headers/networkmanager.h
+    Headers/networkmanager.h \
+    Sources/user.h
 
 # Specify the forms (now in the Forms/ folder)
 FORMS += \

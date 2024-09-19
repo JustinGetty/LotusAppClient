@@ -150,13 +150,15 @@ void MainWindow::on_create_account_button_clicked()
         std::cout << "Verifying creation" << std::endl;
         std::string account_create_status = get_status(networkManager->get_client_socket());
         std::cout << "Account Creation Status" << account_create_status << std::endl;
+
+        QTimer::singleShot(1000, this, [this]() { isProcessing = false; });
     }
     else
     {
         qDebug() << "Error, please enter a valid username and password";
     }
 
-    QTimer::singleShot(1000, this, [this]() { isProcessing = false; });
+
 
 }
 
@@ -180,25 +182,49 @@ void MainWindow::on_login_account_button_clicked()
         //eventually this needs to be actual client socket and not hard coded
         networkManager->send_message(networkManager->get_client_socket(), user_pw_q, "verify_user");
 
+        //get status of login
+        std::cout << "Verifying..." << std::endl;
+
+        std::string status_msg = get_status(networkManager->get_client_socket());
+        std::cout << "Verification status: " + status_msg << std::endl;
+
+        if (status_msg == "verification_succeeded")
+        {
+            switch_to_main_view_after_login();
+        }
+        else if (status_msg == "verification_failed")
+        {
+            ui->login_error_message->setText("<font color='red'>Error: Username or Password is incorrect. Try again.");
+        }
+
+        QTimer::singleShot(1000, this, [this]() { isLoginProcessing = false; });
+
     }
     else
     {
         qDebug() << "Error, please enter a valid username and password";
+        ui->login_error_message->setText("<font color='red'>Error: login failed, enter a username and password.");
     }
 
-    //get status of login
-    std::cout << "Verifying..." << std::endl;
 
-    std::string status_msg = get_status(networkManager->get_client_socket());
-    std::cout << "Verification status: " + status_msg << std::endl;
-
-    QTimer::singleShot(1000, this, [this]() { isLoginProcessing = false; });
 }
 
 void MainWindow::switch_to_create_account_view()
 {
     ui->login_window->hide();
     ui->create_account->show();
+}
+
+void MainWindow::switch_to_login_account_view()
+{
+    ui->create_account->hide();
+    ui->login_window->show();
+}
+
+void MainWindow::switch_to_main_view_after_login()
+{
+    ui->login_window->hide();
+    ui->main_window->show();
 }
 
 
@@ -229,6 +255,8 @@ MainWindow::MainWindow(QWidget *parent)
     });
     receive_thread.detach();
 
+
+    //eventually connect and render these as neede, i.e in the function that loads them
     connect(ui->Send_Message_Button, &QPushButton::clicked, this, &MainWindow::on_Send_Message_Button_clicked);
     connect(this, &MainWindow::appendMessageToTextBrowser, this, &MainWindow::onAppendMessageToTextBrowser);
     connect(ui->uploadButton, &QPushButton::clicked, this, &MainWindow::on_uploadButton_clicked);
@@ -236,6 +264,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->create_account_button, &QPushButton::clicked, this, &MainWindow::on_create_account_button_clicked);
     connect(ui->login_account_button, &QPushButton::clicked, this, &MainWindow::on_login_account_button_clicked);
     connect(ui->switch_to_create_account_btn, &QPushButton::clicked, this, &MainWindow::switch_to_create_account_view);
+    connect(ui->switch_to_login_view, &QPushButton::clicked, this, &MainWindow::switch_to_login_account_view);
 
 
     ui->textBrowser->setFocus();
