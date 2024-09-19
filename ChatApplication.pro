@@ -15,7 +15,7 @@ SOURCES += \
 HEADERS += \
     Headers/mainwindow.h \
     Headers/networkmanager.h \
-    Sources/user.h
+    Headers/user.h \
 
 # Specify the forms (now in the Forms/ folder)
 FORMS += \

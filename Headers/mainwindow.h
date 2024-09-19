@@ -4,6 +4,7 @@
 
 #include <QMainWindow>
 #include "networkmanager.h"
+#include "user.h"
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -27,11 +28,13 @@ private slots:
     void switch_to_create_account_view();
     void switch_to_login_account_view();
     void switch_to_main_view_after_login();
+    void set_mainview_objects_tot();
 
 private:
     Ui::MainWindow *ui;
     QString user_message;
     networkmanager *networkManager;
+    user *active_user;
     bool isProcessing = false;
     bool isLoginProcessing = false;
 

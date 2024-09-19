@@ -1,6 +1,7 @@
 #include "Headers/mainwindow.h"
 #include "ui_mainwindow.h"
 #include "Headers/networkmanager.h"
+#include "Headers/user.h"
 #include <QLabel>
 #include <QString>
 #include <QKeyEvent>
@@ -158,11 +159,7 @@ void MainWindow::on_create_account_button_clicked()
         qDebug() << "Error, please enter a valid username and password";
     }
 
-
-
 }
-
-
 
 void MainWindow::on_login_account_button_clicked()
 {
@@ -188,9 +185,17 @@ void MainWindow::on_login_account_button_clicked()
         std::string status_msg = get_status(networkManager->get_client_socket());
         std::cout << "Verification status: " + status_msg << std::endl;
 
+
+        //need to pull in user id here too, split on pipe. server work later, simple fix
         if (status_msg == "verification_succeeded")
         {
-            switch_to_main_view_after_login();
+            int set_user_id_status = active_user->set_user_id(69);
+            int set_user_status = active_user->set_active_user_username(username);
+            //more robust error handling here
+            if (set_user_status == 0) {
+                set_mainview_objects_tot();
+                switch_to_main_view_after_login();
+            }
         }
         else if (status_msg == "verification_failed")
         {
@@ -205,6 +210,13 @@ void MainWindow::on_login_account_button_clicked()
         qDebug() << "Error, please enter a valid username and password";
         ui->login_error_message->setText("<font color='red'>Error: login failed, enter a username and password.");
     }
+}
+
+//all main window setup should be handled here
+void MainWindow::set_mainview_objects_tot()
+{
+    QString username_text = "User signed in: " + QString::fromStdString(active_user->get_active_user_username());
+    ui->active_user_label->setText(username_text);
 
 
 }
@@ -244,6 +256,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->login_window->show();
     ui->main_window->hide();
     networkManager = new networkmanager();
+    active_user = new user();
     int client_socket = networkManager->get_client_socket();
 
     QIcon icon("/Users/justin/the_harbor/Chat/ChatWidget/ChatApplication/Resources/send_message_icon.jpeg");
@@ -271,8 +284,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->Message_Input_Label->installEventFilter(this);
 
     // **SETUP END** ---------------------------------------------------------------------------------------------------
-
-    std::string name = "Justin"; //this will need to be user input laterr
 
 
     //this will be the recieve logic eventually
