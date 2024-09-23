@@ -44,7 +44,7 @@ QPushButton:pressed {
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="main_window">
      <property name="minimumSize">
@@ -789,11 +789,73 @@ li.checked::marker { content: &quot;\2612&quot;; }
         </property>
        </widget>
       </widget>
+      <widget class="QScrollArea" name="scrollArea">
+       <property name="geometry">
+        <rect>
+         <x>13</x>
+         <y>62</y>
+         <width>267</width>
+         <height>628</height>
+        </rect>
+       </property>
+       <property name="widgetResizable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="scrollAreaWidgetContents">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>265</width>
+          <height>626</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QLabel" name="label_6">
+       <property name="geometry">
+        <rect>
+         <x>21</x>
+         <y>27</y>
+         <width>89</width>
+         <height>27</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLabel{
+	color: #000000;
+}</string>
+       </property>
+       <property name="text">
+        <string>Conversations</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="add_friend_window_btn">
+       <property name="geometry">
+        <rect>
+         <x>137</x>
+         <y>25</y>
+         <width>100</width>
+         <height>32</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton{
+	color: #000000;
+}</string>
+       </property>
+       <property name="text">
+        <string>Add friend +</string>
+       </property>
+      </widget>
       <zorder>textBrowser</zorder>
       <zorder>Send_Message_Button</zorder>
       <zorder>Message_Input_Label</zorder>
       <zorder>uploadButton</zorder>
       <zorder>active_user_frame</zorder>
+      <zorder>scrollArea</zorder>
+      <zorder>label_6</zorder>
+      <zorder>add_friend_window_btn</zorder>
      </widget>
     </widget>
     <widget class="QWidget" name="login_window">
@@ -1210,6 +1272,153 @@ color: #000000;
       <zorder>label</zorder>
       <zorder>user_login_password</zorder>
       <zorder>login_error_message</zorder>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="friends_window">
+     <property name="minimumSize">
+      <size>
+       <width>1339</width>
+       <height>776</height>
+      </size>
+     </property>
+     <widget class="QWidget" name="widget" native="true">
+      <property name="geometry">
+       <rect>
+        <x>59</x>
+        <y>2</y>
+        <width>1352</width>
+        <height>787</height>
+       </rect>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>1339</width>
+        <height>776</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QWidget{
+	background-color: #ffffff;
+}</string>
+      </property>
+      <widget class="QLineEdit" name="username_lookup_line_edit">
+       <property name="geometry">
+        <rect>
+         <x>341</x>
+         <y>116</y>
+         <width>190</width>
+         <height>26</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLineEditl{
+	color: #000000;
+}</string>
+       </property>
+       <property name="text">
+        <string>Enter username:</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="user_search_button">
+       <property name="geometry">
+        <rect>
+         <x>566</x>
+         <y>114</y>
+         <width>100</width>
+         <height>32</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton{
+	color: #000000;
+}</string>
+       </property>
+       <property name="text">
+        <string>send request</string>
+       </property>
+      </widget>
+      <widget class="QScrollArea" name="scrollArea_2">
+       <property name="geometry">
+        <rect>
+         <x>252</x>
+         <y>255</y>
+         <width>257</width>
+         <height>341</height>
+        </rect>
+       </property>
+       <property name="widgetResizable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="scrollAreaWidgetContents_2">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>255</width>
+          <height>339</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QLabel" name="label_8">
+       <property name="geometry">
+        <rect>
+         <x>251</x>
+         <y>204</y>
+         <width>142</width>
+         <height>28</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLabel{
+	color: #000000;
+}</string>
+       </property>
+       <property name="text">
+        <string>Incoming requests</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_9">
+       <property name="geometry">
+        <rect>
+         <x>639</x>
+         <y>207</y>
+         <width>142</width>
+         <height>28</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLabel{
+	color: #000000;
+}</string>
+       </property>
+       <property name="text">
+        <string>Outgoing requests</string>
+       </property>
+      </widget>
+      <widget class="QScrollArea" name="scrollArea_3">
+       <property name="geometry">
+        <rect>
+         <x>640</x>
+         <y>258</y>
+         <width>257</width>
+         <height>341</height>
+        </rect>
+       </property>
+       <property name="widgetResizable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="scrollAreaWidgetContents_3">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>255</width>
+          <height>339</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
      </widget>
     </widget>
     <widget class="QWidget" name="create_account">

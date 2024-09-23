@@ -29,6 +29,8 @@ private slots:
     void switch_to_login_account_view();
     void switch_to_main_view_after_login();
     void set_mainview_objects_tot();
+    void switch_to_friends_view();
+    void send_friend_request();
 
 private:
     Ui::MainWindow *ui;

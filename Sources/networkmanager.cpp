@@ -27,7 +27,7 @@ networkmanager::networkmanager() {
     sockaddr_in server_address;
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(4000);
-    server_address.sin_addr.s_addr = inet_addr("129.213.59.230");
+    server_address.sin_addr.s_addr = inet_addr("192.168.1.192");
 
     if (connect(client_socket, (struct sockaddr*)&server_address, sizeof(server_address)) == -1) {
         std::cerr << "Connection failed" << std::endl;

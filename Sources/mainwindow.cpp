@@ -239,6 +239,17 @@ void MainWindow::switch_to_main_view_after_login()
     ui->main_window->show();
 }
 
+void MainWindow::switch_to_friends_view()
+{
+    ui->main_window->hide();
+    ui->friends_window->show();
+}
+
+void MainWindow::send_friend_request()
+{
+
+}
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -278,6 +289,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->login_account_button, &QPushButton::clicked, this, &MainWindow::on_login_account_button_clicked);
     connect(ui->switch_to_create_account_btn, &QPushButton::clicked, this, &MainWindow::switch_to_create_account_view);
     connect(ui->switch_to_login_view, &QPushButton::clicked, this, &MainWindow::switch_to_login_account_view);
+    connect(ui->add_friend_window_btn, &QPushButton::clicked, this, &MainWindow::switch_to_friends_view);
+    connect(ui->user_search_button, &QPushButton::clicked, this, &MainWindow::send_friend_request);
 
 
     ui->textBrowser->setFocus();
