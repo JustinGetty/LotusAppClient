@@ -25,7 +25,12 @@
  TODO: add sql to server siddeeee
 */
 
+QByteArray std_string_to_qbytearray(std::string x){
 
+    QByteArray y = QByteArray::fromRawData(x.data(), static_cast<int>(x.size()));
+
+    return y;
+}
 std::string get_status(int client_socket) {
     char buffer[30];
     std::string status_message;
@@ -163,6 +168,7 @@ void MainWindow::on_create_account_button_clicked()
 
 void MainWindow::on_login_account_button_clicked()
 {
+    std::cout << "here" << std::endl;
     if (isLoginProcessing) {
         return;  // Prevent double click handling
     }
@@ -200,10 +206,11 @@ void MainWindow::on_login_account_button_clicked()
         else if (status_msg == "verification_failed")
         {
             ui->login_error_message->setText("<font color='red'>Error: Username or Password is incorrect. Try again.");
-        }
+
 
         QTimer::singleShot(1000, this, [this]() { isLoginProcessing = false; });
 
+        }
     }
     else
     {
@@ -211,7 +218,6 @@ void MainWindow::on_login_account_button_clicked()
         ui->login_error_message->setText("<font color='red'>Error: login failed, enter a username and password.");
     }
 }
-
 //all main window setup should be handled here
 void MainWindow::set_mainview_objects_tot()
 {
@@ -247,6 +253,34 @@ void MainWindow::switch_to_friends_view()
 
 void MainWindow::send_friend_request()
 {
+    if (!ui->username_lookup_line_edit->text().isEmpty())
+    {
+
+        std::string receiver_username = (ui->username_lookup_line_edit->text()).toStdString();
+        receiver_username = receiver_username + "+";
+        std::string data = receiver_username + std::to_string((active_user->get_user_id())) + "|";
+
+        QByteArray username_to_send = std_string_to_qbytearray(data);
+
+        networkManager->send_message(networkManager->get_client_socket(), username_to_send, "new_friend_request");
+
+        std::string result = get_status(networkManager->get_client_socket());
+        std::cout << "Result: " << result << std::endl;
+
+        QString error_msg_to_display = QString::fromStdString("<font color='red'>" + result);
+
+        // Calling setText on QLabel safely in the main thread
+        QMetaObject::invokeMethod(ui->friend_request_error_message,
+                                  "setText",               // Method to call (as a string)
+                                  Qt::QueuedConnection,    // Ensure it's queued to run in the main thread
+
+
+    }
+
+    else {
+        //display error
+    }
+
 
 }
 
@@ -263,9 +297,11 @@ MainWindow::MainWindow(QWidget *parent)
     if (!ui->login_window) std::cerr << "login_window is null!" << std::endl;
     if (!ui->main_window) std::cerr << "main_window is null!" << std::endl;
 
+    ui->friends_window->hide();
+    ui->main_window->hide();
     ui->create_account->hide();
     ui->login_window->show();
-    ui->main_window->hide();
+
     networkManager = new networkmanager();
     active_user = new user();
     int client_socket = networkManager->get_client_socket();

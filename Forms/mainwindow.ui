@@ -44,7 +44,7 @@ QPushButton:pressed {
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="main_window">
      <property name="minimumSize">
@@ -1311,7 +1311,7 @@ color: #000000;
         </rect>
        </property>
        <property name="styleSheet">
-        <string notr="true">QLineEditl{
+        <string notr="true">QLineEdit{
 	color: #000000;
 }</string>
        </property>
@@ -1418,6 +1418,19 @@ color: #000000;
          </rect>
         </property>
        </widget>
+      </widget>
+      <widget class="QLabel" name="friend_request_error_message">
+       <property name="geometry">
+        <rect>
+         <x>335</x>
+         <y>162</y>
+         <width>348</width>
+         <height>25</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
       </widget>
      </widget>
     </widget>
