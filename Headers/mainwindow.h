@@ -31,6 +31,8 @@ private slots:
     void set_mainview_objects_tot();
     void switch_to_friends_view();
     void send_friend_request();
+    void handle_accept_friend_request_button();
+    void handle_decline_friend_request_button();
 
 private:
     Ui::MainWindow *ui;
@@ -39,6 +41,7 @@ private:
     user *active_user;
     bool isProcessing = false;
     bool isLoginProcessing = false;
+    QWidget* createWidgetWithFrame(const QString &labelText, const int &user_id);
 
 protected:
     //void keyPressEvent(QKeyEvent *event) override;  // Declaration in the header file

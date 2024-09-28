@@ -789,7 +789,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
         </property>
        </widget>
       </widget>
-      <widget class="QScrollArea" name="scrollArea">
+      <widget class="QScrollArea" name="scrollAreaMainPageFriends">
        <property name="geometry">
         <rect>
          <x>13</x>
@@ -853,7 +853,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
       <zorder>Message_Input_Label</zorder>
       <zorder>uploadButton</zorder>
       <zorder>active_user_frame</zorder>
-      <zorder>scrollArea</zorder>
+      <zorder>scrollAreaMainPageFriends</zorder>
       <zorder>label_6</zorder>
       <zorder>add_friend_window_btn</zorder>
      </widget>
@@ -1337,29 +1337,6 @@ color: #000000;
         <string>send request</string>
        </property>
       </widget>
-      <widget class="QScrollArea" name="scrollArea_2">
-       <property name="geometry">
-        <rect>
-         <x>252</x>
-         <y>255</y>
-         <width>257</width>
-         <height>341</height>
-        </rect>
-       </property>
-       <property name="widgetResizable">
-        <bool>true</bool>
-       </property>
-       <widget class="QWidget" name="scrollAreaWidgetContents_2">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>0</y>
-          <width>255</width>
-          <height>339</height>
-         </rect>
-        </property>
-       </widget>
-      </widget>
       <widget class="QLabel" name="label_8">
        <property name="geometry">
         <rect>
@@ -1396,41 +1373,41 @@ color: #000000;
         <string>Outgoing requests</string>
        </property>
       </widget>
-      <widget class="QScrollArea" name="scrollArea_3">
-       <property name="geometry">
-        <rect>
-         <x>640</x>
-         <y>258</y>
-         <width>257</width>
-         <height>341</height>
-        </rect>
-       </property>
-       <property name="widgetResizable">
-        <bool>true</bool>
-       </property>
-       <widget class="QWidget" name="scrollAreaWidgetContents_3">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>0</y>
-          <width>255</width>
-          <height>339</height>
-         </rect>
-        </property>
-       </widget>
-      </widget>
       <widget class="QLabel" name="friend_request_error_message">
        <property name="geometry">
         <rect>
          <x>335</x>
          <y>162</y>
-         <width>348</width>
+         <width>237</width>
          <height>25</height>
         </rect>
        </property>
        <property name="text">
         <string/>
        </property>
+      </widget>
+      <widget class="QScrollArea" name="scrollArea">
+       <property name="geometry">
+        <rect>
+         <x>217</x>
+         <y>250</y>
+         <width>225</width>
+         <height>329</height>
+        </rect>
+       </property>
+       <property name="widgetResizable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="scrollAreaWidgetContents_2">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>223</width>
+          <height>327</height>
+         </rect>
+        </property>
+       </widget>
       </widget>
      </widget>
     </widget>

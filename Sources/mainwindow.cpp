@@ -19,6 +19,8 @@
 #include <thread>
 #include <ctime>
 #include <QTimer>
+#include <QVBoxLayout>
+
 
 
 /*
@@ -273,17 +275,66 @@ void MainWindow::send_friend_request()
         QMetaObject::invokeMethod(ui->friend_request_error_message,
                                   "setText",               // Method to call (as a string)
                                   Qt::QueuedConnection,    // Ensure it's queued to run in the main thread
-
+                                Q_ARG(QString, error_msg_to_display));
 
     }
 
     else {
         //display error
     }
+}
 
+QWidget* MainWindow::createWidgetWithFrame(const QString &labelText, const int &user_id){
+
+    QFrame *frame = new QFrame;
+    frame->setFrameStyle(QFrame::Box);
+    frame->setStyleSheet("QFrame { background-color: #ffffff; border: 1px solid black; border-radius: 3px; }");
+
+    QVBoxLayout *frameLayout = new QVBoxLayout(frame);
+
+    QLabel *label = new QLabel(labelText);
+
+    QPushButton *accept_button = new QPushButton("Accept");
+    QPushButton *decline_button = new QPushButton("Decline");
+    accept_button->setStyleSheet("QPushButton { color: #000000;}");
+    decline_button->setStyleSheet("QPushButton { color: #000000;}");
+    frameLayout->addWidget(label);
+    frameLayout->addWidget(accept_button);
+    frameLayout->addWidget(decline_button);
+
+    connect(accept_button, &QPushButton::clicked, this, &MainWindow::handle_accept_friend_request_button);
+    connect(decline_button, &QPushButton::clicked, this, &MainWindow::handle_decline_friend_request_button);
+
+    frame->setProperty("embed_user_id", QVariant(user_id));
+
+    return frame;
 
 }
 
+void MainWindow::handle_accept_friend_request_button(){
+    //pass
+    std::cout << "Friend Request Accepted" << std::endl;
+
+    //recast to ensure object stays as button
+    QPushButton *clicked_accept_button = qobject_cast<QPushButton *>(sender());
+
+    if (clicked_accept_button)
+    {
+        QFrame *parent_frame = qobject_cast<QFrame *>(clicked_accept_button->parent());
+
+        if (parent_frame)
+        {
+            QVariant user_id_variant = parent_frame->property("embed_user_id");
+            int user_id_int = user_id_variant.toInt();
+            std::cout << "User ID Associated with Accept: " << user_id_int << std::endl;
+        }
+    }
+}
+
+void MainWindow::handle_decline_friend_request_button(){
+    //pass
+    std::cout << "Friend Request Decline" << std::endl;
+}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -302,6 +353,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->create_account->hide();
     ui->login_window->show();
 
+
     networkManager = new networkmanager();
     active_user = new user();
     int client_socket = networkManager->get_client_socket();
@@ -315,6 +367,7 @@ MainWindow::MainWindow(QWidget *parent)
     });
     receive_thread.detach();
 
+    //std::thread manage_friends_thread([this]() { });
 
     //eventually connect and render these as neede, i.e in the function that loads them
     connect(ui->Send_Message_Button, &QPushButton::clicked, this, &MainWindow::on_Send_Message_Button_clicked);
@@ -331,6 +384,30 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->textBrowser->setFocus();
     ui->Message_Input_Label->installEventFilter(this);
+
+    // BEGIN SETUP FRIENDS PAGE ----------------------------
+
+    //ui->scrollArea->setFixedSize(300,400);
+    QWidget* scrollWidget = new QWidget;
+
+    QVBoxLayout* scrollLayout = new QVBoxLayout(scrollWidget);
+
+    for (int i = 1; i <= 10; i++) {
+        QString labelText = QString("item %1").arg(i);
+        scrollLayout->addWidget(createWidgetWithFrame(labelText, i));
+    }
+    scrollWidget->setLayout(scrollLayout);
+    ui->scrollArea->setWidget(scrollWidget);
+
+    QString labelText = QString("Final");
+    scrollLayout->addWidget(createWidgetWithFrame(labelText, 69));
+
+    scrollWidget->setLayout(scrollLayout);
+    ui->scrollArea->setWidget(scrollWidget);
+
+
+    // END SETUP FRIENDS PAGE --------------------------------
+
 
     // **SETUP END** ---------------------------------------------------------------------------------------------------
 

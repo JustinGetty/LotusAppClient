@@ -10,6 +10,14 @@
 #include <vector>
 #include "Headers/mainwindow.h"
 #include <QString>
+
+/*
+
+
+ */
+#define SERVER_PORT 4000
+#define SERVER_IP "192.168.1.192"
+
 std::mutex clients_mutex;
 std::vector<int> client_sockets;
 
@@ -26,8 +34,8 @@ networkmanager::networkmanager() {
 
     sockaddr_in server_address;
     server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(4000);
-    server_address.sin_addr.s_addr = inet_addr("192.168.1.192");
+    server_address.sin_port = htons(SERVER_PORT);
+    server_address.sin_addr.s_addr = inet_addr(SERVER_IP);
 
     if (connect(client_socket, (struct sockaddr*)&server_address, sizeof(server_address)) == -1) {
         std::cerr << "Connection failed" << std::endl;
