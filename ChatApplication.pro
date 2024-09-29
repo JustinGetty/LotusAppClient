@@ -6,18 +6,22 @@ CONFIG += c++17
 
 # Specify the sources (now in the Sources/ folder)
 SOURCES += \
-    Sources/associated_user_management.cpp \
+    Sources/logicmanager.cpp \
     Sources/main.cpp \
     Sources/mainwindow.cpp \
+    Sources/messagemanager.cpp \
     Sources/networkmanager.cpp \
+    Sources/relationmanager.cpp \
     Sources/user.cpp
 
 # Specify the headers (now in the Headers/ folder)
 HEADERS += \
     Headers/mainwindow.h \
     Headers/networkmanager.h \
+    Headers/relationmanager.h \
     Headers/user.h \
-    Headers/associated_user_management.h \
+    Headers/logicmanager.h \
+    Headers/messagemanager.h
 
 # Specify the forms (now in the Forms/ folder)
 FORMS += \

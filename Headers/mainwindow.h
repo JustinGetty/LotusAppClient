@@ -1,10 +1,29 @@
-
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "networkmanager.h"
-#include "user.h"
+#include "Headers/networkmanager.h"
+#include "Headers/user.h"
+#include "Headers/messagemanager.h"
+#include <QLabel>
+#include <QString>
+#include <QKeyEvent>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QImage>
+#include <QBuffer>
+#include <QTextBrowser>
+#include <iostream>
+#include <string>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <thread>
+#include <ctime>
+#include <QTimer>
+#include <QVBoxLayout>
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -38,6 +57,7 @@ private:
     Ui::MainWindow *ui;
     QString user_message;
     networkmanager *networkManager;
+    messagemanager *messageManager;
     user *active_user;
     bool isProcessing = false;
     bool isLoginProcessing = false;

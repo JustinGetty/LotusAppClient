@@ -24,7 +24,8 @@ class networkmanager
         void send_message(int client_socket, const QByteArray &data, const QString &type);
         int get_client_socket();
         void receive_messages(int client_socket, MainWindow* mainWindow);
-        void close_connection();
+        void close_connection(int client_socket);
+        int setup_socket(const std::string &handshake_msg, const int &user_id);
 
 
     private:

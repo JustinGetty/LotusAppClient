@@ -1,30 +1,13 @@
 #include "Headers/mainwindow.h"
 #include "ui_mainwindow.h"
-#include "Headers/networkmanager.h"
-#include "Headers/user.h"
-#include <QLabel>
-#include <QString>
-#include <QKeyEvent>
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QImage>
-#include <QBuffer>
-#include <QTextBrowser>
-#include <iostream>
-#include <string>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <thread>
-#include <ctime>
-#include <QTimer>
-#include <QVBoxLayout>
 
 
 
 /*
- TODO: add sql to server siddeeee
+ TODO:
+    1. make connection logic so connections are sorted by type on server end
+    2. Make friends request system async in its own thread and fix crashing issues of get status for adding a friend
+    3. Implement sending messages
 */
 
 QByteArray std_string_to_qbytearray(std::string x){
@@ -38,6 +21,7 @@ std::string get_status(int client_socket) {
     std::string status_message;
 
     while (true) {
+        std::cout << "Getting status good" << std::endl;
         ssize_t status_bytes = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
         if (status_bytes < 0) {
 
@@ -96,7 +80,7 @@ void MainWindow::on_uploadButton_clicked()
         QBuffer buffer(&byte_array);
         buffer.open(QIODevice::WriteOnly);
         image.save(&buffer, "PNG");  // format is png, change that later to be dynamic
-//super important here, this needs to go into send_message_button_clicked9)        networkManager->send_message(3, byte_array, "image");
+//super important here, this needs to go into send_message_button_clicked9)        messageManager->send_message(3, byte_array, "image");
 
         //QMessageBox::information(this, tr("Success"), tr("Image uploaded and displayed successfully."));
     }
@@ -153,10 +137,10 @@ void MainWindow::on_create_account_button_clicked()
         std::string user_pw = username + "|" + password;
         QByteArray user_pw_q = QByteArray::fromRawData(user_pw.data(), static_cast<int>(user_pw.size()));
         //eventually this needs to be actual client socket and not hard coded
-        networkManager->send_message(networkManager->get_client_socket(), user_pw_q, "new_user");
+        messageManager->send_message(messageManager->get_message_manager_socket(), user_pw_q, "new_user");
 
         std::cout << "Verifying creation" << std::endl;
-        std::string account_create_status = get_status(networkManager->get_client_socket());
+        std::string account_create_status = get_status(messageManager->get_message_manager_socket());
         std::cout << "Account Creation Status" << account_create_status << std::endl;
 
         QTimer::singleShot(1000, this, [this]() { isProcessing = false; });
@@ -185,12 +169,12 @@ void MainWindow::on_login_account_button_clicked()
         std::string user_pw = username + "|" + password;
         QByteArray user_pw_q = QByteArray::fromRawData(user_pw.data(), static_cast<int>(user_pw.size()));
         //eventually this needs to be actual client socket and not hard coded
-        networkManager->send_message(networkManager->get_client_socket(), user_pw_q, "verify_user");
+        messageManager->send_message(messageManager->get_message_manager_socket(), user_pw_q, "verify_user");
 
         //get status of login
         std::cout << "Verifying..." << std::endl;
 
-        std::string status_msg = get_status(networkManager->get_client_socket());
+        std::string status_msg = get_status(messageManager->get_message_manager_socket());
         std::cout << "Verification status: " + status_msg << std::endl;
 
 
@@ -264,9 +248,10 @@ void MainWindow::send_friend_request()
 
         QByteArray username_to_send = std_string_to_qbytearray(data);
 
-        networkManager->send_message(networkManager->get_client_socket(), username_to_send, "new_friend_request");
+        messageManager->send_message(messageManager->get_message_manager_socket(), username_to_send, "new_friend_request");
 
-        std::string result = get_status(networkManager->get_client_socket());
+        //crashing here, not recieving correctly
+        std::string result = get_status(messageManager->get_message_manager_socket());
         std::cout << "Result: " << result << std::endl;
 
         QString error_msg_to_display = QString::fromStdString("<font color='red'>" + result);
@@ -353,17 +338,18 @@ MainWindow::MainWindow(QWidget *parent)
     ui->create_account->hide();
     ui->login_window->show();
 
-
-    networkManager = new networkmanager();
+    //refactor here. This creates a new thread for sending and recievung messages.
     active_user = new user();
-    int client_socket = networkManager->get_client_socket();
+
+    messageManager = new messagemanager(active_user->get_user_id());
+    int message_manager_socket = messageManager->get_message_manager_socket();
 
     QIcon icon("/Users/justin/the_harbor/Chat/ChatWidget/ChatApplication/Resources/send_message_icon.jpeg");
     ui->Send_Message_Button->setIcon(icon);
     ui->Send_Message_Button->setIconSize(QSize(ui->Send_Message_Button->width() + 4, ui->Send_Message_Button->height()));
 
-    std::thread receive_thread([this, client_socket]() {
-        networkManager->receive_messages(client_socket, this);
+    std::thread receive_thread([this, message_manager_socket]() {
+        messageManager->async_receive_messages(message_manager_socket, this);
     });
     receive_thread.detach();
 
@@ -433,7 +419,9 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     qDebug() << "Main window destructor called";
-    networkManager->close_connection();
+
+    //this needs to be ran for every connection (logic, relation, etc.)
+    networkManager->close_connection(messageManager->get_message_manager_socket());
     delete ui;
 }
 
