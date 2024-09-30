@@ -37,6 +37,7 @@ std::string get_status(int client_socket) {
 
         if (status_message.find('|') != std::string::npos) { //npos represents end of string
             break;
+
         }
     }
 
