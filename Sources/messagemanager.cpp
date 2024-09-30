@@ -21,8 +21,8 @@ void messagemanager::async_receive_messages(const int &message_manager_socket, M
     //thread to recieve
     char buffer[1024];
     std::string accumulated_data;
-
     while (true) {
+
         memset(buffer, 0, sizeof(buffer));
         int bytes_received = recv(message_manager_socket, buffer, sizeof(buffer), 0);
         if (bytes_received <= 0) {

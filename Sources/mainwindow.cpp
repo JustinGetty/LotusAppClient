@@ -17,7 +17,7 @@ QByteArray std_string_to_qbytearray(std::string x){
     return y;
 }
 std::string get_status(int client_socket) {
-    char buffer[30];
+    char buffer[45];
     std::string status_message;
 
     while (true) {
@@ -32,6 +32,7 @@ std::string get_status(int client_socket) {
         }
         buffer[status_bytes] = '\0';
 
+        std::cout << buffer << std::endl;
         status_message += buffer;
 
         if (status_message.find('|') != std::string::npos) { //npos represents end of string
