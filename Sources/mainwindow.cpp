@@ -143,12 +143,12 @@ void MainWindow::on_create_account_button_clicked()
         std::string password = (ui->create_pwd_input->text()).toStdString();
 
         std::string user_pw = username + "|" + password;
-        QByteArray user_pw_q = QByteArray::fromRawData(user_pw.data(), static_cast<int>(user_pw.size()));
+
         //eventually this needs to be actual client socket and not hard coded
-        messageManager->send_message(messageManager->get_message_manager_socket(), user_pw_q, "new_user");
+        logicManager->verify_new_account(logicManager->get_logic_manager_socket(), user_pw);
 
         std::cout << "Verifying creation" << std::endl;
-        std::string account_create_status = get_status(messageManager->get_message_manager_socket());
+        std::string account_create_status = logicManager->get_status(logicManager->get_logic_manager_socket());
         std::cout << "Account Creation Status" << account_create_status << std::endl;
 
         QTimer::singleShot(1000, this, [this]() { isProcessing = false; });
@@ -173,16 +173,14 @@ void MainWindow::on_login_account_button_clicked()
     {
         std::string username = (ui->user_login_name->text()).toStdString();
         std::string password = (ui->user_login_password->text()).toStdString();
-
         std::string user_pw = username + "|" + password;
-        QByteArray user_pw_q = QByteArray::fromRawData(user_pw.data(), static_cast<int>(user_pw.size()));
-        //eventually this needs to be actual client socket and not hard coded
-        messageManager->send_message(messageManager->get_message_manager_socket(), user_pw_q, "verify_user");
 
+        //eventually this needs to be actual client socket and not hard coded
+        logicManager->verify_login(logicManager->get_logic_manager_socket(), user_pw);
         //get status of login
         std::cout << "Verifying..." << std::endl;
 
-        std::string status_msg = get_status(messageManager->get_message_manager_socket());
+        std::string status_msg = logicManager->get_status(logicManager->get_logic_manager_socket());
         std::cout << "Verification status: " + status_msg << std::endl;
 
 
@@ -191,7 +189,24 @@ void MainWindow::on_login_account_button_clicked()
         {
             int set_user_id_status = active_user->set_user_id(69);
             int set_user_status = active_user->set_active_user_username(username);
+
+            std::cout << "Set user status: " << set_user_status << std::endl;
 //------CREATE THE MESSAGE AND RELATION THREADS HERE---------------
+            messageManager = new messagemanager(active_user->get_user_id());
+            int message_manager_socket = messageManager->get_message_manager_socket();
+            std::thread message_management_thread([this, message_manager_socket] () {
+                messageManager->async_receive_messages(message_manager_socket, this);
+            });
+            message_management_thread.detach();
+
+            relationsManager = new relationmanager(active_user->get_user_id());
+            int relations_manager_socket = relationsManager->get_relation_manager_socket();
+            std::thread relations_management_thread([this, relations_manager_socket] () {
+                relationsManager->async_manage_requests(relations_manager_socket, this);
+            });
+
+            relations_management_thread.detach();
+
             //more robust error handling here
             if (set_user_status == 0) {
                 set_mainview_objects_tot();
@@ -255,12 +270,10 @@ void MainWindow::send_friend_request()
         receiver_username = receiver_username + "+";
         std::string data = receiver_username + std::to_string((active_user->get_user_id())) + "|";
 
-        QByteArray username_to_send = std_string_to_qbytearray(data);
-
-        messageManager->send_message(messageManager->get_message_manager_socket(), username_to_send, "new_friend_request");
+        relationsManager->send_friend_request(relationsManager->get_relation_manager_socket(), data);
 
         //crashing here, not recieving correctly
-        std::string result = get_status(messageManager->get_message_manager_socket());
+        std::string result = relationsManager->get_request_status(relationsManager->get_relation_manager_socket());
         std::cout << "Result: " << result << std::endl;
 
         QString error_msg_to_display = QString::fromStdString("<font color='red'>" + result);
@@ -352,17 +365,17 @@ MainWindow::MainWindow(QWidget *parent)
 
     //this will be the logic manager instead, call this with fake user_id, then get it later on server side
     //server logic thread will already have the user id when verifying so can find it easy
-    messageManager = new messagemanager(active_user->get_user_id());
-    int message_manager_socket = messageManager->get_message_manager_socket();
+    logicManager = new logicmanager();
+    int logic_manager_socket = logicManager->get_logic_manager_socket();
 
     QIcon icon("/Users/justin/the_harbor/Chat/ChatWidget/ChatApplication/Resources/send_message_icon.jpeg");
     ui->Send_Message_Button->setIcon(icon);
     ui->Send_Message_Button->setIconSize(QSize(ui->Send_Message_Button->width() + 4, ui->Send_Message_Button->height()));
 
-    std::thread receive_thread([this, message_manager_socket]() {
-        messageManager->async_receive_messages(message_manager_socket, this);
+    std::thread logic_management_thread([this, logic_manager_socket]() {
+        logicManager->async_handle_auth_and_infrastructure(logic_manager_socket);
     });
-    receive_thread.detach();
+    logic_management_thread.detach();
 
     //std::thread manage_friends_thread([this]() { });
 

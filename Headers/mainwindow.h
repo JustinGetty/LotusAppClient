@@ -5,6 +5,8 @@
 #include "Headers/networkmanager.h"
 #include "Headers/user.h"
 #include "Headers/messagemanager.h"
+#include "Headers/logicmanager.h"
+#include "Headers/relationmanager.h"
 #include <QLabel>
 #include <QString>
 #include <QKeyEvent>
@@ -58,6 +60,8 @@ private:
     QString user_message;
     networkmanager *networkManager;
     messagemanager *messageManager;
+    relationmanager *relationsManager;
+    logicmanager *logicManager;
     user *active_user;
     bool isProcessing = false;
     bool isLoginProcessing = false;

@@ -43,7 +43,7 @@ void messagemanager::async_receive_messages(const int &message_manager_socket, M
 
             // Use Qt's signals/slots mechanism in the MainWindow class to update the UI
             QString qMessage = QString::fromStdString(message);
-            mainWindow->appendMessageToTextBrowser(qMessage);
+            QMetaObject::invokeMethod(mainWindow, "appendMessageToTextBrowser", Qt::QueuedConnection, Q_ARG(QString, qMessage));
         }
     }
 }
