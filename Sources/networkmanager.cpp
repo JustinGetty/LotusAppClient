@@ -60,6 +60,13 @@ int networkmanager::setup_socket(const std::string &handshake_msg, const int &us
     //implement send here to send provided handshake, send user_id so sockets can be managed by user.
     // When message is sent, can check if user is online,if yes, store and send directly to them. else, store
 
+    std::string combined_handshake_userid = handshake_msg + "|" + std::to_string(user_id);
+
+    if (send(temp_socket, combined_handshake_userid.c_str(), combined_handshake_userid.size(), 0) == -1)
+    {
+        qDebug() << "Error sending image";
+    }
+
     return temp_socket;
 
 }

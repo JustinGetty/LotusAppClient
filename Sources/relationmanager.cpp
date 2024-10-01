@@ -5,6 +5,7 @@ relationmanager::relationmanager() {
     relation_network_manager = new networkmanager();
     relation_manager_socket = relation_network_manager->setup_socket("RELATION_MANAGEMENT", -1);
 
+
 }
 
 void relationmanager::async_manage_requests(const int &relation_manager_socket)

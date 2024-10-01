@@ -6,8 +6,14 @@
 /*
  TODO:
     1. make connection logic so connections are sorted by type on server end
+        - subnote: switch message manager with logic manager, use -1 as user_id, ignore on other end.
+        - then once username verified and "logging in" (maybe make login its own func) pass the user id to
+        - the message and relation threads when creating those objects
     2. Make friends request system async in its own thread and fix crashing issues of get status for adding a friend
     3. Implement sending messages
+
+    left off:
+    - restrucing logic to handle verificiation, setup message and relations with user id after succesfull login
 */
 
 QByteArray std_string_to_qbytearray(std::string x){
@@ -185,6 +191,7 @@ void MainWindow::on_login_account_button_clicked()
         {
             int set_user_id_status = active_user->set_user_id(69);
             int set_user_status = active_user->set_active_user_username(username);
+//------CREATE THE MESSAGE AND RELATION THREADS HERE---------------
             //more robust error handling here
             if (set_user_status == 0) {
                 set_mainview_objects_tot();
@@ -343,6 +350,8 @@ MainWindow::MainWindow(QWidget *parent)
     //refactor here. This creates a new thread for sending and recievung messages.
     active_user = new user();
 
+    //this will be the logic manager instead, call this with fake user_id, then get it later on server side
+    //server logic thread will already have the user id when verifying so can find it easy
     messageManager = new messagemanager(active_user->get_user_id());
     int message_manager_socket = messageManager->get_message_manager_socket();
 
