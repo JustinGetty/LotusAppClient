@@ -2,6 +2,8 @@
 #include <iostream>
 #include <string>
 #include <sys/socket.h>
+#include <vector>
+#include <utility>
 
 #ifndef RELATIONMANAGER_H
 #define RELATIONMANAGER_H
@@ -14,6 +16,7 @@ public:
     void async_manage_requests(const int &relation_manager_socket, MainWindow* mainwindow);
     void send_friend_request(int socket, const std::string &data_to_send);
     std::string get_request_status(int client_socket);
+    std::vector<std::pair<std::string, int>> pull_inbound_friend_requests(int client_socket);
 
 private:
     int relation_manager_socket;

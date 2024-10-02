@@ -268,7 +268,7 @@ void MainWindow::send_friend_request()
 
         std::string receiver_username = (ui->username_lookup_line_edit->text()).toStdString();
         receiver_username = receiver_username + "+";
-        std::string data = receiver_username + std::to_string((active_user->get_user_id())) + "|";
+        std::string data = receiver_username + std::to_string((active_user->get_user_id())) + "-" + active_user->get_active_user_username() + "|";
 
         relationsManager->send_friend_request(relationsManager->get_relation_manager_socket(), data);
 
@@ -404,6 +404,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     for (int i = 1; i <= 10; i++) {
         QString labelText = QString("item %1").arg(i);
+        //second arg is id
         scrollLayout->addWidget(createWidgetWithFrame(labelText, i));
     }
     scrollWidget->setLayout(scrollLayout);
