@@ -10,6 +10,7 @@ relationmanager::relationmanager(int user_id) {
 
 void relationmanager::async_manage_requests(const int &relation_manager_socket, MainWindow* mainwindow)
 {
+
     //listen and make updates accordingly
 }
 
@@ -108,16 +109,51 @@ std::vector<std::pair<std::string, int>> relationmanager::pull_inbound_friend_re
         {
             break;
         }
+        if (user_id_data.size() > 1)
+        {
+            int friend_id = std::stoi(user_id_data.substr(0, user_id_data.find("+")));
+            std::string friend_username = user_id_data.substr(user_id_data.find("+") + 1, user_id_data.find("|"));
 
-        int friend_id = std::stoi(user_id_data.substr(0, user_id_data.find("+")));
-        std::string friend_username = user_id_data.substr(user_id_data.find("+") + 1, user_id_data.find("|"));
-
-        friend_requests.push_back({friend_username, friend_id});
-
+            friend_requests.push_back({friend_username, friend_id});
+        }
 
     }
 
     return friend_requests;
+}
+
+int relationmanager::fetch_user_id_from_server(const std::string &username)
+{
+    char buffer[8];
+    std::string received_data;
+    std::string type = "get_user_id\n";
+    send(relation_manager_socket, type.c_str(), type.size(), 0);
+    std::cout << "sent header, sending username" << std::endl;
+    std::string username_tot = username + "|";
+    send(relation_manager_socket, username_tot.c_str(), username_tot.size(), 0);
+
+    while (true)
+    {
+        int bytes_received = recv(relation_manager_socket, &buffer, sizeof(buffer) - 1, 0);
+
+        if(bytes_received < 0)
+        {
+            return -1;
+        } else if (bytes_received == 0)
+        {
+            std::cerr << "Fetch user id connection close by server" << std::endl;
+            return -1;
+        }
+
+        received_data += buffer;
+        std::cout << "recieved user_id data from server: " << std::endl;
+        if (received_data.find("|") != std::string::npos)
+        {
+            break;
+        }
+    }
+    int id = std::stoi(received_data.substr(0, received_data.find("|")));
+    return id;
 }
 
 

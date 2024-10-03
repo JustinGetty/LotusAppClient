@@ -25,6 +25,8 @@
 #include <ctime>
 #include <QTimer>
 #include <QVBoxLayout>
+#include <utility>
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -39,6 +41,7 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    void setup_friend_requests();
 
 private slots:
     void on_Send_Message_Button_clicked();

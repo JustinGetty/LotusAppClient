@@ -17,6 +17,7 @@ public:
     void send_friend_request(int socket, const std::string &data_to_send);
     std::string get_request_status(int client_socket);
     std::vector<std::pair<std::string, int>> pull_inbound_friend_requests(int client_socket);
+    int fetch_user_id_from_server(const std::string &username);
 
 private:
     int relation_manager_socket;

@@ -183,11 +183,17 @@ void MainWindow::on_login_account_button_clicked()
         std::string status_msg = logicManager->get_status(logicManager->get_logic_manager_socket());
         std::cout << "Verification status: " + status_msg << std::endl;
 
+        int fetched_user_id = relationsManager->fetch_user_id_from_server(username);
 
         //need to pull in user id here too, split on pipe. server work later, simple fix
-        if (status_msg == "verification_succeeded")
+        if (status_msg == "verification_succeeded" && fetched_user_id != -1)
         {
-            int set_user_id_status = active_user->set_user_id(69);
+            int set_user_id_status = active_user->set_user_id(fetched_user_id);
+            if(active_user->get_user_id() == -1)
+            {
+                std::cerr << "ERROR GETTING USER ID, LOGIN FAILED" << std::endl;
+            }
+            std::cout << "USER ID AT LOGIN: " << active_user->get_user_id();
             int set_user_status = active_user->set_active_user_username(username);
 
             std::cout << "Set user status: " << set_user_status << std::endl;
@@ -207,6 +213,11 @@ void MainWindow::on_login_account_button_clicked()
 
             relations_management_thread.detach();
 
+            std::cerr << "At line 202" << std::endl;
+            setup_friend_requests();
+
+            std::cerr << "At line 205" << std::endl;
+
             //more robust error handling here
             if (set_user_status == 0) {
                 set_mainview_objects_tot();
@@ -220,6 +231,9 @@ void MainWindow::on_login_account_button_clicked()
 
         QTimer::singleShot(1000, this, [this]() { isLoginProcessing = false; });
 
+        } else if(fetched_user_id == -1)
+        {
+            ui->login_error_message->setText("<font color='red'>Error: Failed to get USER ID. Login failed");
         }
     }
     else
@@ -343,6 +357,39 @@ void MainWindow::handle_decline_friend_request_button(){
     std::cout << "Friend Request Decline" << std::endl;
 }
 
+void MainWindow::setup_friend_requests()
+{
+    std::vector<std::pair<std::string, int>> friend_requests = relationsManager->pull_inbound_friend_requests(relationsManager->get_relation_manager_socket());
+
+    for (const auto &data : friend_requests)
+    {
+        std::cout << "Request Username: " << data.first << ", ID: " << data.second << std::endl;
+    }
+    // BEGIN SETUP FRIENDS PAGE ----------------------------
+
+    //ui->scrollArea->setFixedSize(300,400);
+    QWidget* scrollWidget = new QWidget;
+
+    QVBoxLayout* scrollLayout = new QVBoxLayout(scrollWidget);
+
+    for (int i = 1; i <= 10; i++) {
+        QString labelText = QString("item %1").arg(i);
+        //second arg is id
+        scrollLayout->addWidget(createWidgetWithFrame(labelText, i));
+    }
+    scrollWidget->setLayout(scrollLayout);
+    ui->scrollArea->setWidget(scrollWidget);
+
+    QString labelText = QString("Final");
+    scrollLayout->addWidget(createWidgetWithFrame(labelText, 69));
+
+    scrollWidget->setLayout(scrollLayout);
+    ui->scrollArea->setWidget(scrollWidget);
+
+
+    // END SETUP FRIENDS PAGE --------------------------------
+}
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -394,31 +441,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->textBrowser->setFocus();
     ui->Message_Input_Label->installEventFilter(this);
-
-    // BEGIN SETUP FRIENDS PAGE ----------------------------
-
-    //ui->scrollArea->setFixedSize(300,400);
-    QWidget* scrollWidget = new QWidget;
-
-    QVBoxLayout* scrollLayout = new QVBoxLayout(scrollWidget);
-
-    for (int i = 1; i <= 10; i++) {
-        QString labelText = QString("item %1").arg(i);
-        //second arg is id
-        scrollLayout->addWidget(createWidgetWithFrame(labelText, i));
-    }
-    scrollWidget->setLayout(scrollLayout);
-    ui->scrollArea->setWidget(scrollWidget);
-
-    QString labelText = QString("Final");
-    scrollLayout->addWidget(createWidgetWithFrame(labelText, 69));
-
-    scrollWidget->setLayout(scrollLayout);
-    ui->scrollArea->setWidget(scrollWidget);
-
-
-    // END SETUP FRIENDS PAGE --------------------------------
-
 
     // **SETUP END** ---------------------------------------------------------------------------------------------------
 
