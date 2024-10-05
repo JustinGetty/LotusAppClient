@@ -94,6 +94,9 @@ std::vector<std::pair<std::string, int>> relationmanager::pull_inbound_friend_re
             {
                 std::cerr << "Friend request connection close by server" << std::endl;
                 return empty_friend_requests;
+            } else if (status_bytes == 1 && friend_requests.empty())
+            {
+                return empty_friend_requests;
             }
             buffer[status_bytes] = '\0';
             std::cout << "friend buffer: " << buffer << std::endl;
@@ -105,16 +108,16 @@ std::vector<std::pair<std::string, int>> relationmanager::pull_inbound_friend_re
                 break;
             }
         }
-        if (user_id_data.find("-") != std::string::npos)
-        {
-            break;
-        }
         if (user_id_data.size() > 1)
         {
             int friend_id = std::stoi(user_id_data.substr(0, user_id_data.find("+")));
-            std::string friend_username = user_id_data.substr(user_id_data.find("+") + 1, user_id_data.find("|"));
-
+            std::string friend_username = user_id_data.substr(user_id_data.find("+") + 1, user_id_data.find("|") - user_id_data.find("+") - 1);
             friend_requests.push_back({friend_username, friend_id});
+        }
+
+        if (user_id_data.find("-") != std::string::npos)
+        {
+            break;
         }
 
     }
@@ -127,33 +130,59 @@ int relationmanager::fetch_user_id_from_server(const std::string &username)
     char buffer[8];
     std::string received_data;
     std::string type = "get_user_id\n";
-    send(relation_manager_socket, type.c_str(), type.size(), 0);
-    std::cout << "sent header, sending username" << std::endl;
-    std::string username_tot = username + "|";
+
+    std::string username_tot = type + username + "|";
+    std::cout << "Sending message: " << username_tot << std::endl;
+
+    std::cout << "relation manager socket: " << relation_manager_socket << std::endl;
     send(relation_manager_socket, username_tot.c_str(), username_tot.size(), 0);
 
     while (true)
     {
-        int bytes_received = recv(relation_manager_socket, &buffer, sizeof(buffer) - 1, 0);
+        int bytes_received = recv(relation_manager_socket, buffer, sizeof(buffer) - 1, 0);
+        std::cerr << "Fetching user id, bytes received: " << bytes_received << std::endl;
 
-        if(bytes_received < 0)
+        if (bytes_received < 0)
         {
+            std::cerr << "Error receiving data" << std::endl;
             return -1;
-        } else if (bytes_received == 0)
+        }
+        else if (bytes_received == 0)
         {
-            std::cerr << "Fetch user id connection close by server" << std::endl;
+            std::cerr << "Connection closed by server" << std::endl;
             return -1;
         }
 
-        received_data += buffer;
-        std::cout << "recieved user_id data from server: " << std::endl;
+        received_data.append(buffer, bytes_received);
+
+        std::cout << "Received user_id data from server: " << received_data << std::endl;
+
         if (received_data.find("|") != std::string::npos)
         {
             break;
         }
     }
+
+    // Extract the user id from the received data
     int id = std::stoi(received_data.substr(0, received_data.find("|")));
     return id;
+}
+
+int relationmanager::send_friend_update(const int &relation_socket, const int &sender_id, const std::string &type)
+{
+    send(relation_socket, type.c_str(), type.size(), 0);
+    std::string msg = std::to_string(sender_id) + "|";
+    send(relation_socket, msg.c_str(), msg.size(), 0);
+
+    //maybe needs object call
+    std::string result = get_request_status(relation_socket);
+    if (result == "accept_failed")
+    {
+        return -1;
+    } else if (result == "accept_succeeded")
+    {
+        return 0;
+    }
 }
 
 

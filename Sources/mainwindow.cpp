@@ -183,7 +183,11 @@ void MainWindow::on_login_account_button_clicked()
         std::string status_msg = logicManager->get_status(logicManager->get_logic_manager_socket());
         std::cout << "Verification status: " + status_msg << std::endl;
 
-        int fetched_user_id = relationsManager->fetch_user_id_from_server(username);
+        std::cout << "Fetching user id" << std::endl;
+        //int fetched_user_id = relationsManager->fetch_user_id_from_server(username);
+        int fetched_user_id = logicManager->fetch_user_id_from_server(username);
+
+        std::cout << "Fetched user id" << std::endl;
 
         //need to pull in user id here too, split on pipe. server work later, simple fix
         if (status_msg == "verification_succeeded" && fetched_user_id != -1)
@@ -317,6 +321,7 @@ QWidget* MainWindow::createWidgetWithFrame(const QString &labelText, const int &
 
     QPushButton *accept_button = new QPushButton("Accept");
     QPushButton *decline_button = new QPushButton("Decline");
+    label->setStyleSheet("QLabel { color: #000000;}");
     accept_button->setStyleSheet("QPushButton { color: #000000;}");
     decline_button->setStyleSheet("QPushButton { color: #000000;}");
     frameLayout->addWidget(label);
@@ -348,6 +353,7 @@ void MainWindow::handle_accept_friend_request_button(){
             QVariant user_id_variant = parent_frame->property("embed_user_id");
             int user_id_int = user_id_variant.toInt();
             std::cout << "User ID Associated with Accept: " << user_id_int << std::endl;
+            int friend_update_status = relationsManager->send_friend_update(relationsManager->get_relation_manager_socket(), user_id_int, "accept_friend_request\n");
         }
     }
 }
@@ -359,35 +365,29 @@ void MainWindow::handle_decline_friend_request_button(){
 
 void MainWindow::setup_friend_requests()
 {
+
     std::vector<std::pair<std::string, int>> friend_requests = relationsManager->pull_inbound_friend_requests(relationsManager->get_relation_manager_socket());
+
+    if(friend_requests.empty())
+    {
+        return;
+    }
+
+    QWidget* scrollWidget = new QWidget;
+    QVBoxLayout* scrollLayout = new QVBoxLayout(scrollWidget);
 
     for (const auto &data : friend_requests)
     {
         std::cout << "Request Username: " << data.first << ", ID: " << data.second << std::endl;
+
+        QString labelText = QString::fromStdString(data.first);
+        //second arg is id
+        scrollLayout->addWidget(createWidgetWithFrame(labelText, data.second));
     }
-    // BEGIN SETUP FRIENDS PAGE ----------------------------
 
     //ui->scrollArea->setFixedSize(300,400);
-    QWidget* scrollWidget = new QWidget;
-
-    QVBoxLayout* scrollLayout = new QVBoxLayout(scrollWidget);
-
-    for (int i = 1; i <= 10; i++) {
-        QString labelText = QString("item %1").arg(i);
-        //second arg is id
-        scrollLayout->addWidget(createWidgetWithFrame(labelText, i));
-    }
     scrollWidget->setLayout(scrollLayout);
     ui->scrollArea->setWidget(scrollWidget);
-
-    QString labelText = QString("Final");
-    scrollLayout->addWidget(createWidgetWithFrame(labelText, 69));
-
-    scrollWidget->setLayout(scrollLayout);
-    ui->scrollArea->setWidget(scrollWidget);
-
-
-    // END SETUP FRIENDS PAGE --------------------------------
 }
 
 MainWindow::MainWindow(QWidget *parent)

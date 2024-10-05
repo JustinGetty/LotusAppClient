@@ -102,3 +102,45 @@ std::string logicmanager::get_status(int client_socket) {
     // Return the message up to the delimiter
     return status_message.substr(0, status_message.find('|'));
 }
+
+int logicmanager::fetch_user_id_from_server(const std::string &username)
+{
+    char buffer[8];
+    std::string received_data;
+    std::string type = "get_user_id\n";
+
+    std::string username_tot = type + username + "|";
+    std::cout << "Sending message: " << username_tot << std::endl;
+
+    send(logic_manager_socket, username_tot.c_str(), username_tot.size(), 0);
+
+    while (true)
+    {
+        int bytes_received = recv(logic_manager_socket, buffer, sizeof(buffer) - 1, 0);
+        std::cerr << "Fetching user id, bytes received: " << bytes_received << std::endl;
+
+        if (bytes_received < 0)
+        {
+            std::cerr << "Error receiving data" << std::endl;
+            return -1;
+        }
+        else if (bytes_received == 0)
+        {
+            std::cerr << "Connection closed by server" << std::endl;
+            return -1;
+        }
+
+        received_data.append(buffer, bytes_received);
+
+        std::cout << "Received user_id data from server: " << received_data << std::endl;
+
+        if (received_data.find("|") != std::string::npos)
+        {
+            break;
+        }
+    }
+
+    // Extract the user id from the received data
+    int id = std::stoi(received_data.substr(0, received_data.find("|")));
+    return id;
+}

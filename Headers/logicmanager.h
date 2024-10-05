@@ -13,6 +13,7 @@ public:
     void verify_login(int client_socket, const std::string &verify_combined);
     std::string get_status(int client_socket);
     void verify_new_account(int conn_socket, const std::string &user_pw);
+    int fetch_user_id_from_server(const std::string &username);
 
 private:
     int logic_manager_socket;
