@@ -217,10 +217,7 @@ void MainWindow::on_login_account_button_clicked()
 
             relations_management_thread.detach();
 
-            std::cerr << "At line 202" << std::endl;
-            setup_friend_requests();
 
-            std::cerr << "At line 205" << std::endl;
 
             //more robust error handling here
             if (set_user_status == 0) {
@@ -273,10 +270,23 @@ void MainWindow::switch_to_main_view_after_login()
     ui->main_window->show();
 }
 
+void MainWindow::on_refresh_friend_requests_btn_clicked()
+{
+    std::cout << "Refreshing friend requests" << std::endl;
+    setup_friend_requests();
+}
+
 void MainWindow::switch_to_friends_view()
 {
+    std::cout << "Switching to friends view" << std::endl;
+    setup_friend_requests();
     ui->main_window->hide();
     ui->friends_window->show();
+}
+void MainWindow::on_to_main_from_friends_btn_clicked()
+{
+    ui->friends_window->hide();
+    ui->main_window->show();
 }
 
 void MainWindow::send_friend_request()
@@ -370,6 +380,11 @@ void MainWindow::setup_friend_requests()
 
     if(friend_requests.empty())
     {
+        QWidget* scrollWidget = new QWidget;
+        QVBoxLayout* scrollLayout = new QVBoxLayout(scrollWidget);
+        scrollWidget->setLayout(scrollLayout);
+        ui->scrollArea->setWidget(scrollWidget);
+
         return;
     }
 
@@ -437,7 +452,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->switch_to_login_view, &QPushButton::clicked, this, &MainWindow::switch_to_login_account_view);
     connect(ui->add_friend_window_btn, &QPushButton::clicked, this, &MainWindow::switch_to_friends_view);
     connect(ui->user_search_button, &QPushButton::clicked, this, &MainWindow::send_friend_request);
-
+    bool isConnected = connect(ui->refresh_friend_requests_btn, &QPushButton::clicked, this, &MainWindow::on_refresh_friend_requests_btn_clicked);
+    if (!isConnected) {
+        qDebug() << "Connection to refresh_friend_requests_btn failed!";
+    }
+    connect(ui->to_main_from_friends_btn, &QPushButton::clicked, this, &MainWindow::on_to_main_from_friends_btn_clicked);
 
     ui->textBrowser->setFocus();
     ui->Message_Input_Label->installEventFilter(this);

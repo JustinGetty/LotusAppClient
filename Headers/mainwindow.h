@@ -57,6 +57,8 @@ private slots:
     void send_friend_request();
     void handle_accept_friend_request_button();
     void handle_decline_friend_request_button();
+    void on_refresh_friend_requests_btn_clicked();
+    void on_to_main_from_friends_btn_clicked();
 
 private:
     Ui::MainWindow *ui;
