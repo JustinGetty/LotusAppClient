@@ -5,15 +5,12 @@
 
 /*
  TODO:
-    1. make connection logic so connections are sorted by type on server end
-        - subnote: switch message manager with logic manager, use -1 as user_id, ignore on other end.
-        - then once username verified and "logging in" (maybe make login its own func) pass the user id to
-        - the message and relation threads when creating those objects
     2. Make friends request system async in its own thread and fix crashing issues of get status for adding a friend
     3. Implement sending messages
+    4. Add loading buffers and animations while content/data is loading/connecting
+    5. Comprehensive error handling
 
     left off:
-    - restrucing logic to handle verificiation, setup message and relations with user id after succesfull login
 */
 
 QByteArray std_string_to_qbytearray(std::string x){
@@ -274,12 +271,18 @@ void MainWindow::on_refresh_friend_requests_btn_clicked()
 {
     std::cout << "Refreshing friend requests" << std::endl;
     setup_friend_requests();
+    std::cout << "Fetched Incoming Requests" << std::endl;
+    setup_outbound_friend_requests();
+    std::cout << "Fetched Outbound Requests" << std::endl;
 }
 
 void MainWindow::switch_to_friends_view()
 {
     std::cout << "Switching to friends view" << std::endl;
     setup_friend_requests();
+    std::cout << "Fetched Incoming Requests" << std::endl;
+    setup_outbound_friend_requests();
+    std::cout << "Fetched Outbound Requests" << std::endl;
     ui->main_window->hide();
     ui->friends_window->show();
 }
@@ -293,8 +296,12 @@ void MainWindow::send_friend_request()
 {
     if (!ui->username_lookup_line_edit->text().isEmpty())
     {
-
         std::string receiver_username = (ui->username_lookup_line_edit->text()).toStdString();
+        if (receiver_username == active_user->get_active_user_username())
+        {
+            QString error_msg_to_display = QString::fromStdString("<font color='red'>You cannot add yourself");
+            return;
+        }
         receiver_username = receiver_username + "+";
         std::string data = receiver_username + std::to_string((active_user->get_user_id())) + "-" + active_user->get_active_user_username() + "|";
 
@@ -312,6 +319,7 @@ void MainWindow::send_friend_request()
                                   Qt::QueuedConnection,    // Ensure it's queued to run in the main thread
                                 Q_ARG(QString, error_msg_to_display));
 
+        setup_outbound_friend_requests();
     }
 
     else {
@@ -347,6 +355,23 @@ QWidget* MainWindow::createWidgetWithFrame(const QString &labelText, const int &
 
 }
 
+QWidget* MainWindow::createWidgetNoButtons(const QString &labelText, const int &user_id){
+
+    QFrame *frame = new QFrame;
+    frame->setFrameStyle(QFrame::Box);
+    frame->setStyleSheet("QFrame { background-color: #ffffff; border: 1px solid black; border-radius: 3px; }");
+
+    QVBoxLayout *frameLayout = new QVBoxLayout(frame);
+    QLabel *label = new QLabel(labelText);
+
+    label->setStyleSheet("QLabel { color: #000000;}");
+    frameLayout->addWidget(label);
+
+    frame->setProperty("embed_user_id", QVariant(user_id));
+
+    return frame;
+
+}
 void MainWindow::handle_accept_friend_request_button(){
     //pass
     std::cout << "Friend Request Accepted" << std::endl;
@@ -375,35 +400,50 @@ void MainWindow::handle_decline_friend_request_button(){
 
 void MainWindow::setup_friend_requests()
 {
-
     std::vector<std::pair<std::string, int>> friend_requests = relationsManager->pull_inbound_friend_requests(relationsManager->get_relation_manager_socket());
-
-    if(friend_requests.empty())
-    {
-        QWidget* scrollWidget = new QWidget;
-        QVBoxLayout* scrollLayout = new QVBoxLayout(scrollWidget);
-        scrollWidget->setLayout(scrollLayout);
-        ui->scrollArea->setWidget(scrollWidget);
-
-        return;
-    }
 
     QWidget* scrollWidget = new QWidget;
     QVBoxLayout* scrollLayout = new QVBoxLayout(scrollWidget);
 
+    if(friend_requests.empty())
+    {
+        ui->scroll_area_incoming_requests->setWidget(scrollWidget);
+        return;
+    }
+
     for (const auto &data : friend_requests)
     {
-        std::cout << "Request Username: " << data.first << ", ID: " << data.second << std::endl;
-
         QString labelText = QString::fromStdString(data.first);
-        //second arg is id
         scrollLayout->addWidget(createWidgetWithFrame(labelText, data.second));
     }
 
-    //ui->scrollArea->setFixedSize(300,400);
     scrollWidget->setLayout(scrollLayout);
-    ui->scrollArea->setWidget(scrollWidget);
+    ui->scroll_area_incoming_requests->setWidget(scrollWidget);  // Incoming requests scroll area
 }
+
+void MainWindow::setup_outbound_friend_requests()
+{
+    std::vector<std::pair<std::string, int>> outgoing_requests = relationsManager->pull_outbound_friend_requests(relationsManager->get_relation_manager_socket());
+
+    QWidget* scrollWidget = new QWidget;
+    QVBoxLayout* scrollLayout = new QVBoxLayout(scrollWidget);
+
+    if(outgoing_requests.empty())
+    {
+        ui->scroll_area_outgoing_requests->setWidget(scrollWidget);  // Use a different scroll area
+        return;
+    }
+
+    for (const auto &data : outgoing_requests)
+    {
+        QString labelText = QString::fromStdString(data.first);
+        scrollLayout->addWidget(createWidgetNoButtons(labelText, data.second));
+    }
+
+    scrollWidget->setLayout(scrollLayout);
+    ui->scroll_area_outgoing_requests->setWidget(scrollWidget);  // Outgoing requests scroll area
+}
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),

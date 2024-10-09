@@ -135,6 +135,76 @@ std::vector<std::pair<std::string, int>> relationmanager::pull_inbound_friend_re
     return friend_requests;
 }
 
+std::vector<std::pair<std::string, int>> relationmanager::pull_outbound_friend_requests(int client_socket)
+{
+    std::string msg_type = "get_outbound_friends\n";
+    std::vector<std::pair<std::string, int>> friend_requests;
+    std::vector<std::pair<std::string, int>> empty_friend_requests;
+
+    // Send the request to the server
+    if (send(client_socket, msg_type.c_str(), msg_type.size(), 0) == -1)
+    {
+        std::cerr << "Unable to establish connection with server: ERROR receiving friend requests" << std::endl;
+        return empty_friend_requests;
+    }
+
+    while (true)
+    {
+        char buffer[100] = {0};  // Ensure buffer is initialized to 0
+        std::string user_id_data;
+
+        // Inner loop to collect data until "|" is found
+        while (true)
+        {
+            std::cout << "Receiving friend requests" << std::endl;
+            ssize_t status_bytes = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
+
+            if (status_bytes < 0)
+            {
+                std::cerr << "Error receiving data from server" << std::endl;
+                return empty_friend_requests;
+            }
+            else if (status_bytes == 0)
+            {
+                std::cerr << "Friend request connection closed by server" << std::endl;
+                return empty_friend_requests;
+            }
+
+            buffer[status_bytes] = '\0';
+            user_id_data += buffer;
+
+            std::cout << "User ID Data: " << user_id_data << std::endl;
+
+            // Check if the message contains the delimiter "|"
+            if (user_id_data.find("|") != std::string::npos || user_id_data.find("-") != std::string::npos)
+            {
+                break;
+            }
+        }
+
+
+        // If termination signal "-" is received, break the outer loop
+        if (user_id_data == "-")
+        {
+            std::cout << "Termination signal received. Stopping reception of friend requests." << std::endl;
+            break;
+        }
+
+        // Process the friend request if it's not empty or the termination signal
+        if (user_id_data.size() > 1)
+        {
+            int friend_id = std::stoi(user_id_data.substr(0, user_id_data.find("+")));
+            std::string friend_username = user_id_data.substr(user_id_data.find("+") + 1, user_id_data.find("|") - user_id_data.find("+") - 1);
+            friend_requests.push_back({friend_username, friend_id});
+        }
+
+        // Clear the user_id_data after processing each entry
+        user_id_data.clear();
+    }
+
+    return friend_requests;
+}
+
 
 
 int relationmanager::fetch_user_id_from_server(const std::string &username)

@@ -19,6 +19,7 @@ public:
     std::vector<std::pair<std::string, int>> pull_inbound_friend_requests(int client_socket);
     int fetch_user_id_from_server(const std::string &username);
     int send_friend_update(const int &relation_socket, const int &sender_id, const std::string &type);
+    std::vector<std::pair<std::string, int>> pull_outbound_friend_requests(int client_socket);
 
 private:
     int relation_manager_socket;

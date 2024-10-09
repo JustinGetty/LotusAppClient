@@ -1386,7 +1386,7 @@ color: #000000;
         <string/>
        </property>
       </widget>
-      <widget class="QScrollArea" name="scrollArea">
+      <widget class="QScrollArea" name="scroll_area_incoming_requests">
        <property name="geometry">
         <rect>
          <x>217</x>
@@ -1446,6 +1446,29 @@ color: #000000;
        <property name="text">
         <string>Back</string>
        </property>
+      </widget>
+      <widget class="QScrollArea" name="scroll_area_outgoing_requests">
+       <property name="geometry">
+        <rect>
+         <x>543</x>
+         <y>258</y>
+         <width>225</width>
+         <height>329</height>
+        </rect>
+       </property>
+       <property name="widgetResizable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="scrollAreaWidgetContents_3">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>223</width>
+          <height>327</height>
+         </rect>
+        </property>
+       </widget>
       </widget>
      </widget>
     </widget>

@@ -42,6 +42,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     void setup_friend_requests();
+    void setup_outbound_friend_requests();
 
 private slots:
     void on_Send_Message_Button_clicked();
@@ -71,6 +72,7 @@ private:
     bool isProcessing = false;
     bool isLoginProcessing = false;
     QWidget* createWidgetWithFrame(const QString &labelText, const int &user_id);
+    QWidget* createWidgetNoButtons(const QString &labelText, const int &user_id);
 
 protected:
     //void keyPressEvent(QKeyEvent *event) override;  // Declaration in the header file
