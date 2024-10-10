@@ -245,6 +245,7 @@ void MainWindow::set_mainview_objects_tot()
 {
     QString username_text = "User signed in: " + QString::fromStdString(active_user->get_active_user_username());
     ui->active_user_label->setText(username_text);
+    set_friends_main_page();
 
 
 }
@@ -327,21 +328,47 @@ void MainWindow::send_friend_request()
     }
 }
 
-QWidget* MainWindow::createWidgetWithFrame(const QString &labelText, const int &user_id){
-
+QWidget* MainWindow::createWidgetWithFrame(const QString &labelText, const int &user_id) {
     QFrame *frame = new QFrame;
     frame->setFrameStyle(QFrame::Box);
-    frame->setStyleSheet("QFrame { background-color: #ffffff; border: 1px solid black; border-radius: 3px; }");
+
+    // New style to make it look nicer
+    frame->setStyleSheet(
+        "QFrame { "
+        "background-color: #f9f9f9; "
+        "border: 1px solid #dcdcdc; "
+        "border-radius: 8px; "
+        "padding: 8px; }"
+        );
 
     QVBoxLayout *frameLayout = new QVBoxLayout(frame);
+    frameLayout->setContentsMargins(5, 5, 5, 5); // Reduce margins to make the widget smaller
 
     QLabel *label = new QLabel(labelText);
+    label->setStyleSheet("QLabel { color: #333333; font-size: 14px; }");
 
     QPushButton *accept_button = new QPushButton("Accept");
     QPushButton *decline_button = new QPushButton("Decline");
-    label->setStyleSheet("QLabel { color: #000000;}");
-    accept_button->setStyleSheet("QPushButton { color: #000000;}");
-    decline_button->setStyleSheet("QPushButton { color: #000000;}");
+
+    // Style for the buttons
+    accept_button->setStyleSheet(
+        "QPushButton { "
+        "color: white; "
+        "background-color: #4CAF50; "
+        "border-radius: 6px; "
+        "padding: 6px 12px; }"
+        "QPushButton:hover { background-color: #45a049; }"
+        );
+
+    decline_button->setStyleSheet(
+        "QPushButton { "
+        "color: white; "
+        "background-color: #f44336; "
+        "border-radius: 6px; "
+        "padding: 6px 12px; }"
+        "QPushButton:hover { background-color: #e53935; }"
+        );
+
     frameLayout->addWidget(label);
     frameLayout->addWidget(accept_button);
     frameLayout->addWidget(decline_button);
@@ -352,26 +379,35 @@ QWidget* MainWindow::createWidgetWithFrame(const QString &labelText, const int &
     frame->setProperty("embed_user_id", QVariant(user_id));
 
     return frame;
-
 }
 
-QWidget* MainWindow::createWidgetNoButtons(const QString &labelText, const int &user_id){
 
+QWidget* MainWindow::createWidgetNoButtons(const QString &labelText, const int &user_id) {
     QFrame *frame = new QFrame;
     frame->setFrameStyle(QFrame::Box);
-    frame->setStyleSheet("QFrame { background-color: #ffffff; border: 1px solid black; border-radius: 3px; }");
+
+    // Improved style for the frame
+    frame->setStyleSheet(
+        "QFrame { "
+        "background-color: #f9f9f9; "
+        "border: 1px solid #dcdcdc; "
+        "border-radius: 8px; "
+        "padding: 8px; }"
+        );
 
     QVBoxLayout *frameLayout = new QVBoxLayout(frame);
-    QLabel *label = new QLabel(labelText);
+    frameLayout->setContentsMargins(5, 5, 5, 5); // Smaller margins to make the widget more compact
 
-    label->setStyleSheet("QLabel { color: #000000;}");
+    QLabel *label = new QLabel(labelText);
+    label->setStyleSheet("QLabel { color: #333333; font-size: 14px; }");
+
     frameLayout->addWidget(label);
 
     frame->setProperty("embed_user_id", QVariant(user_id));
 
     return frame;
-
 }
+
 void MainWindow::handle_accept_friend_request_button(){
     //pass
     std::cout << "Friend Request Accepted" << std::endl;
@@ -443,7 +479,21 @@ void MainWindow::setup_outbound_friend_requests()
     scrollWidget->setLayout(scrollLayout);
     ui->scroll_area_outgoing_requests->setWidget(scrollWidget);  // Outgoing requests scroll area
 }
+void MainWindow::set_friends_main_page()
+{
+    std::vector<std::pair<std::string, int>> friends_list = relationsManager->pull_friends_list(relationsManager->get_relation_manager_socket());
+    for (const auto &data : friends_list)
+    {
+        std::cout << "Friend list Username: " << data.first << ", ID: " << data.second << std::endl;
+    }
+   //scrollAreaMainPageFriends
+    /*
+    QWidget* scrollWidget = new QWidget;
+    QVBoxLayout* scrollLayout = new QVBoxLayout(scrollWidget);
+*/
 
+
+}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),

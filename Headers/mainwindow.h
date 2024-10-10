@@ -43,6 +43,7 @@ public:
     ~MainWindow();
     void setup_friend_requests();
     void setup_outbound_friend_requests();
+    void set_friends_main_page();
 
 private slots:
     void on_Send_Message_Button_clicked();
