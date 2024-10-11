@@ -408,6 +408,48 @@ QWidget* MainWindow::createWidgetNoButtons(const QString &labelText, const int &
     return frame;
 }
 
+QWidget* MainWindow::createFriendWidget(const QString &labelText, const int &user_id) {
+    QFrame *frame = new QFrame;
+    frame->setFrameStyle(QFrame::Box);
+
+    // New style to make it look nicer
+    frame->setStyleSheet(
+        "QFrame { "
+        "background-color: #f9f9f9; "
+        "border: 1px solid #dcdcdc; "
+        "border-radius: 8px; "
+        "padding: 8px; }"
+        );
+
+    QVBoxLayout *frameLayout = new QVBoxLayout(frame);
+    frameLayout->setContentsMargins(5, 5, 5, 5); // Reduce margins to make the widget smaller
+
+    QLabel *label = new QLabel(labelText);
+    label->setStyleSheet("QLabel { color: #333333; font-size: 14px; }");
+
+    QPushButton *switch_to_chat_button = new QPushButton("Switch to chat");
+
+    // Style for the buttons
+    switch_to_chat_button->setStyleSheet(
+        "QPushButton { "
+        "color: white; "
+        "background-color: #4CAF50; "
+        "border-radius: 6px; "
+        "padding: 6px 12px; }"
+        "QPushButton:hover { background-color: #45a049; }"
+        );
+
+    frameLayout->addWidget(label);
+    frameLayout->addWidget(switch_to_chat_button);
+
+    connect(switch_to_chat_button, &QPushButton::clicked, this, &MainWindow::handle_switch_to_chat_button);
+
+    frame->setProperty("embed_user_id", QVariant(user_id));
+
+    return frame;
+}
+
+
 void MainWindow::handle_accept_friend_request_button(){
     //pass
     std::cout << "Friend Request Accepted" << std::endl;
@@ -427,11 +469,28 @@ void MainWindow::handle_accept_friend_request_button(){
             int friend_update_status = relationsManager->send_friend_update(relationsManager->get_relation_manager_socket(), user_id_int, "accept_friend_request\n");
         }
     }
+    setup_friend_requests();
 }
 
 void MainWindow::handle_decline_friend_request_button(){
     //pass
     std::cout << "Friend Request Decline" << std::endl;
+
+    QPushButton *clicked_declined_button = qobject_cast<QPushButton *>(sender());
+
+    if (clicked_declined_button)
+    {
+        QFrame *parent_frame = qobject_cast<QFrame *>(clicked_declined_button->parent());
+
+        if (parent_frame)
+        {
+            QVariant user_id_variant = parent_frame->property("embed_user_id");
+            int user_id_int = user_id_variant.toInt();
+            std::cout << "User ID Associated with Accept: " << user_id_int << std::endl;
+            int friend_update_status = relationsManager->send_friend_update(relationsManager->get_relation_manager_socket(), user_id_int, "decline_friend_request\n");
+        }
+    }
+    setup_friend_requests();
 }
 
 void MainWindow::setup_friend_requests()
@@ -481,17 +540,33 @@ void MainWindow::setup_outbound_friend_requests()
 }
 void MainWindow::set_friends_main_page()
 {
+
     std::vector<std::pair<std::string, int>> friends_list = relationsManager->pull_friends_list(relationsManager->get_relation_manager_socket());
+
+    QWidget* scrollWidget = new QWidget;
+    QVBoxLayout* scrollLayout = new QVBoxLayout(scrollWidget);
+
+    if(friends_list.empty())
+    {
+        ui->scrollAreaMainPageFriends->setWidget(scrollWidget);
+        return;
+    }
+
     for (const auto &data : friends_list)
     {
         std::cout << "Friend list Username: " << data.first << ", ID: " << data.second << std::endl;
+        QString labelText = QString::fromStdString(data.first);
+        scrollLayout->addWidget(createFriendWidget(labelText, data.second));
     }
-   //scrollAreaMainPageFriends
-    /*
-    QWidget* scrollWidget = new QWidget;
-    QVBoxLayout* scrollLayout = new QVBoxLayout(scrollWidget);
-*/
+    //scrollAreaMainPageFriends
 
+    scrollWidget->setLayout(scrollLayout);
+    ui->scrollAreaMainPageFriends->setWidget(scrollWidget);
+}
+
+void MainWindow::handle_switch_to_chat_button()
+{
+    std::cout << "switched to chat" << std::endl;
 
 }
 

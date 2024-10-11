@@ -12,6 +12,8 @@ void relationmanager::async_manage_requests(const int &relation_manager_socket, 
 {
 
     //listen and make updates accordingly
+
+    //should a signal be recieved, just call setup_friend_requests()
 }
 
 

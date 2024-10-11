@@ -61,6 +61,7 @@ private slots:
     void handle_decline_friend_request_button();
     void on_refresh_friend_requests_btn_clicked();
     void on_to_main_from_friends_btn_clicked();
+    void handle_switch_to_chat_button();
 
 private:
     Ui::MainWindow *ui;
@@ -74,6 +75,7 @@ private:
     bool isLoginProcessing = false;
     QWidget* createWidgetWithFrame(const QString &labelText, const int &user_id);
     QWidget* createWidgetNoButtons(const QString &labelText, const int &user_id);
+    QWidget* createFriendWidget(const QString &labelText, const int &user_id);
 
 protected:
     //void keyPressEvent(QKeyEvent *event) override;  // Declaration in the header file
