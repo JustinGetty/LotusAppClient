@@ -50,10 +50,6 @@ std::string get_status(int client_socket) {
     return status_message.substr(0, status_message.find('|'));
 }
 
-void MainWindow::onAppendMessageToTextBrowser(const QString& message) {
-    ui->textBrowser->append(message);
-}
-//upload images
 
 
 void MainWindow::on_uploadButton_clicked()
@@ -96,7 +92,6 @@ void MainWindow::on_Send_Message_Button_clicked()
 {
     //fuck this fag ass plain text type REFIG asap
     user_message = ui->Message_Input_Label->toPlainText();
-    ui->textBrowser->append(user_message);
     ui->Message_Input_Label->clear();
 
     QByteArray Ronaldo = user_message.toUtf8();
@@ -442,7 +437,10 @@ QWidget* MainWindow::createFriendWidget(const QString &labelText, const int &use
     frameLayout->addWidget(label);
     frameLayout->addWidget(switch_to_chat_button);
 
-    connect(switch_to_chat_button, &QPushButton::clicked, this, &MainWindow::handle_switch_to_chat_button);
+    connect(switch_to_chat_button, &QPushButton::clicked, this, [this, user_id]() {
+        handle_switch_to_chat_button(user_id);
+    });
+
 
     frame->setProperty("embed_user_id", QVariant(user_id));
 
@@ -564,9 +562,31 @@ void MainWindow::set_friends_main_page()
     ui->scrollAreaMainPageFriends->setWidget(scrollWidget);
 }
 
-void MainWindow::handle_switch_to_chat_button()
+void MainWindow::handle_switch_to_chat_button(const int &user_id_chat)
 {
     std::cout << "switched to chat" << std::endl;
+
+    QLayout* tempLayout = ui->TextBrowserParentWidget->layout();
+    if (tempLayout) {
+        QLayoutItem* item;
+        while ((item = tempLayout->takeAt(0)) != nullptr) {
+            if (QWidget* widget = item->widget()) {
+                widget->setParent(nullptr);
+            }
+            delete item;
+        }
+        delete tempLayout;
+    }
+
+    // add new textBrowser to ui->TextBrowserParentWidget with chats
+    QTextBrowser* mainChatTextBrowser = new QTextBrowser;
+    mainChatTextBrowser->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(ui->TextBrowserParentWidget->layout());
+    layout = new QVBoxLayout(ui->TextBrowserParentWidget);
+    ui->TextBrowserParentWidget->setLayout(layout);
+
+    layout->addWidget(mainChatTextBrowser);
 
 }
 
@@ -608,7 +628,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     //eventually connect and render these as neede, i.e in the function that loads them
     connect(ui->Send_Message_Button, &QPushButton::clicked, this, &MainWindow::on_Send_Message_Button_clicked);
-    connect(this, &MainWindow::appendMessageToTextBrowser, this, &MainWindow::onAppendMessageToTextBrowser);
     connect(ui->uploadButton, &QPushButton::clicked, this, &MainWindow::on_uploadButton_clicked);
     disconnect(ui->create_account_button, &QPushButton::clicked, this, &MainWindow::on_create_account_button_clicked);
     connect(ui->create_account_button, &QPushButton::clicked, this, &MainWindow::on_create_account_button_clicked);
@@ -623,7 +642,6 @@ MainWindow::MainWindow(QWidget *parent)
     }
     connect(ui->to_main_from_friends_btn, &QPushButton::clicked, this, &MainWindow::on_to_main_from_friends_btn_clicked);
 
-    ui->textBrowser->setFocus();
     ui->Message_Input_Label->installEventFilter(this);
 
     // **SETUP END** ---------------------------------------------------------------------------------------------------

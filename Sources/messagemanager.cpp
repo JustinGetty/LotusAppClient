@@ -16,6 +16,17 @@ int messagemanager::get_message_manager_socket()
     return message_manager_socket;
 }
 
+std::string extract_between(const std::string& data, const std::string& start_delim, const std::string& end_delim) {
+    size_t start = data.find(start_delim);
+    if (start == std::string::npos) return "";
+    start += start_delim.length();  // Move past the start delimiter
+
+    size_t end = data.find(end_delim, start);
+    if (end == std::string::npos) return "";
+
+    return data.substr(start, end - start);
+}
+
 void messagemanager::async_receive_messages(const int &message_manager_socket, MainWindow* mainWindow)
 {
     //thread to recieve
@@ -66,3 +77,82 @@ void messagemanager::send_message(int client_socket, const QByteArray &data, con
     }
 
 }
+
+std::vector<std::vector<std::string>> pull_init_chat_messages(int client_socket, int* participants)
+{
+    int member_count = sizeof(participants) / sizeof(int);
+    int user_id_one = participants[0];
+    std::string user_id_pipe = std::to_string(user_id_one) + "|";
+
+    std::vector<std::vector<std::string>> empty_chat_log;
+    std::vector<std::vector<std::string>> chat_log;
+
+    const char* type = "init_chat\n";
+    ssize_t bytes_sent = send(client_socket, type, strlen(type), 0);
+
+    std::cout << "Bytes sent for chat retrieval: " << bytes_sent << std::endl;
+
+    if(bytes_sent > -1)
+    {
+
+    std::cout << "sending chat member id's" << std::endl;
+    ssize_t sec_bytes_sent = send(client_socket, user_id_pipe.c_str(), user_id_pipe.size(), 0);
+    if (sec_bytes_sent > -1)
+    {
+        while (true)
+        {
+            char buffer[500] = {0};
+            std::string all_message_data;
+
+            while (true)
+            {
+                std::cout << "retrieving chat messages" << std::endl;
+                ssize_t status_bytes = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
+
+                if (status_bytes > 0)
+                {
+                    std::cerr << "Error receiving data from server" << std::endl;
+                    return empty_chat_log;
+                }
+                else if (status_bytes == 0)
+                {
+                    std::cerr << "Chat log init connection closed by server" << std::endl;
+                    return empty_chat_log;
+                }
+
+                buffer[status_bytes] = '\0';
+                all_message_data += buffer;
+                std::cout << "Message data: " << all_message_data << std::endl;
+
+                if (all_message_data.find("\\|") != std::string::npos || all_message_data.find("-") != std::string::npos)
+                {
+                    break;
+                }
+            }
+            if(all_message_data == "-")
+            {
+                std::cout << "Termination signal received. Stopping reception of messages" << std::endl;
+                break;
+            }
+
+            if(all_message_data.size() > 1)
+            {
+                std::string time_stamp = all_message_data.substr(0, all_message_data.find("\\+"));
+                std::string sender_username = extract_between(all_message_data, "\\+", "\\-");
+                std::string message_contents = extract_between(all_message_data, "\\-", "\\|");
+
+                std::vector<std::string> temp_vct = {time_stamp, sender_username, message_contents};
+                chat_log.push_back(temp_vct);
+            }
+        }
+        return chat_log;
+    }
+    }
+    else{qDebug() << "Error getting chat messages";}
+    return empty_chat_log;
+}
+
+
+
+
+

@@ -47,7 +47,6 @@ public:
 
 private slots:
     void on_Send_Message_Button_clicked();
-    void onAppendMessageToTextBrowser(const QString& message);
     void on_uploadButton_clicked();
     void on_create_account_button_clicked();
     void on_login_account_button_clicked();
@@ -61,7 +60,7 @@ private slots:
     void handle_decline_friend_request_button();
     void on_refresh_friend_requests_btn_clicked();
     void on_to_main_from_friends_btn_clicked();
-    void handle_switch_to_chat_button();
+    void handle_switch_to_chat_button(const int &user_id);
 
 private:
     Ui::MainWindow *ui;
