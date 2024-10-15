@@ -60,7 +60,7 @@ private slots:
     void handle_decline_friend_request_button();
     void on_refresh_friend_requests_btn_clicked();
     void on_to_main_from_friends_btn_clicked();
-    void handle_switch_to_chat_button(const int &user_id);
+    void handle_switch_to_chat_button(const int &user_id_chat);
 
 private:
     Ui::MainWindow *ui;

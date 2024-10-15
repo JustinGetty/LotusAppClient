@@ -15,7 +15,7 @@ public:
     int get_message_manager_socket();
     void async_receive_messages(const int &message_manager_socket, MainWindow* mainWindow);
     void send_message(int client_socket, const QByteArray &data, const QString &type);
-    std::vector<std::vector<std::string>> pull_init_chat_messages(int client_socket, int* participants);
+    std::vector<std::vector<std::string>> pull_init_chat_messages(int client_socket, const std::vector<int>& participants);
 
 private:
     int message_manager_socket;

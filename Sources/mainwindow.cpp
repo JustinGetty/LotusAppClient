@@ -565,7 +565,15 @@ void MainWindow::set_friends_main_page()
 void MainWindow::handle_switch_to_chat_button(const int &user_id_chat)
 {
     std::cout << "switched to chat" << std::endl;
+    std::vector<int> members_in_chat;
+    members_in_chat.push_back(user_id_chat);
+    std::vector<std::vector<std::string>> chat_logs = messageManager->pull_init_chat_messages(messageManager->get_message_manager_socket(), members_in_chat);
+    std::cout << "starting layout setup" << std::endl;
 
+    if(chat_logs.empty())
+    {
+        //empty layout
+    }
     QLayout* tempLayout = ui->TextBrowserParentWidget->layout();
     if (tempLayout) {
         QLayoutItem* item;
@@ -587,6 +595,20 @@ void MainWindow::handle_switch_to_chat_button(const int &user_id_chat)
     ui->TextBrowserParentWidget->setLayout(layout);
 
     layout->addWidget(mainChatTextBrowser);
+    mainChatTextBrowser->setStyleSheet("QTextBrowser{ color: #000000; }");
+
+    for(auto row : chat_logs)
+    {
+        std::string sender;
+        if(row[1] == active_user->get_active_user_username())
+        {
+            sender = "Me";
+        }
+        else{sender = row[1];}
+
+        std::string data = "[" + sender + "] " + row[2];
+        mainChatTextBrowser->append(QString::fromStdString(data));
+    }
 
 }
 

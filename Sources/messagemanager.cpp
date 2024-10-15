@@ -78,9 +78,9 @@ void messagemanager::send_message(int client_socket, const QByteArray &data, con
 
 }
 
-std::vector<std::vector<std::string>> pull_init_chat_messages(int client_socket, int* participants)
+std::vector<std::vector<std::string>> messagemanager::pull_init_chat_messages(int client_socket, const std::vector<int>& participants)
 {
-    int member_count = sizeof(participants) / sizeof(int);
+    int member_count = participants.size();
     int user_id_one = participants[0];
     std::string user_id_pipe = std::to_string(user_id_one) + "|";
 
@@ -109,7 +109,7 @@ std::vector<std::vector<std::string>> pull_init_chat_messages(int client_socket,
                 std::cout << "retrieving chat messages" << std::endl;
                 ssize_t status_bytes = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
 
-                if (status_bytes > 0)
+                if (status_bytes < 0)
                 {
                     std::cerr << "Error receiving data from server" << std::endl;
                     return empty_chat_log;
@@ -129,7 +129,7 @@ std::vector<std::vector<std::string>> pull_init_chat_messages(int client_socket,
                     break;
                 }
             }
-            if(all_message_data == "-")
+            if(all_message_data == "-\0")
             {
                 std::cout << "Termination signal received. Stopping reception of messages" << std::endl;
                 break;
@@ -145,6 +145,7 @@ std::vector<std::vector<std::string>> pull_init_chat_messages(int client_socket,
                 chat_log.push_back(temp_vct);
             }
         }
+
         return chat_log;
     }
     }
