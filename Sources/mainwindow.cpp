@@ -564,6 +564,7 @@ void MainWindow::set_friends_main_page()
 
 void MainWindow::handle_switch_to_chat_button(const int &user_id_chat)
 {
+    //refactor this to pull only from memory instead of reemote server. All logs will be pulled once from server in seperate function
     std::cout << "switched to chat" << std::endl;
     std::vector<int> members_in_chat;
     members_in_chat.push_back(user_id_chat);
