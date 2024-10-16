@@ -2,20 +2,6 @@
 #include "Headers/networkmanager.h"
 #include "Headers/mainwindow.h"
 
-
-messagemanager::messagemanager(const int &user_id) {
-
-    message_network_manager = new networkmanager();
-
-    //pass user's user id into this
-    message_manager_socket = message_network_manager->setup_socket("MESSAGE_MANAGEMENT", user_id);
-}
-
-int messagemanager::get_message_manager_socket()
-{
-    return message_manager_socket;
-}
-
 std::string extract_between(const std::string& data, const std::string& start_delim, const std::string& end_delim) {
     size_t start = data.find(start_delim);
     if (start == std::string::npos) return "";
@@ -26,6 +12,111 @@ std::string extract_between(const std::string& data, const std::string& start_de
 
     return data.substr(start, end - start);
 }
+
+std::vector<std::vector<std::string>> pull_all_chat_messages(int client_socket)
+{
+    std::vector<std::vector<std::string>> empty_chat_log;
+    std::vector<std::vector<std::string>> chat_log;
+
+    const char* type = "get_all_chats\n";
+    ssize_t bytes_sent = send(client_socket, type, strlen(type), 0);
+
+    std::cout << "Bytes sent for chat retrieval: " << bytes_sent << std::endl;
+
+    if(bytes_sent > -1)
+    {
+        while (true)
+        {
+            char buffer[500] = {0};
+            std::string all_message_data;
+
+            while (true)
+            {
+                std::cout << "retrieving chat messages" << std::endl;
+                ssize_t status_bytes = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
+
+                if (status_bytes < 0)
+                {
+                    std::cerr << "Error receiving data from server" << std::endl;
+                    return empty_chat_log;
+                }
+                else if (status_bytes == 0)
+                {
+                    std::cerr << "Chat log init connection closed by server" << std::endl;
+                    return empty_chat_log;
+                }
+
+                buffer[status_bytes] = '\0';
+                all_message_data += buffer;
+                std::cout << "Message data: " << all_message_data << std::endl;
+
+                if (all_message_data.find("\\|") != std::string::npos || all_message_data.find("-") != std::string::npos)
+                {
+                    break;
+                }
+            }
+            if(all_message_data == "-\0")
+            {
+                std::cout << "Termination signal received. Stopping reception of messages" << std::endl;
+                break;
+            }
+
+            if(all_message_data.size() > 1)
+            {
+                std::string time_stamp = all_message_data.substr(0, all_message_data.find("\\+"));
+                std::string sender_username = extract_between(all_message_data, "\\+", "\\-");
+                std::string sender_id = extract_between(all_message_data, "\\-", "\\]");
+                std::string receiver_1= extract_between(all_message_data, "\\]", "\\[");
+                std::string message_contents = extract_between(all_message_data, "\\[", "\\|");
+
+                std::vector<std::string> temp_vct = {time_stamp, sender_username, sender_id, receiver_1, message_contents};
+                chat_log.push_back(temp_vct);
+            }
+        }
+
+        return chat_log;
+    }
+    else{qDebug() << "Error getting chat messages";}
+    return empty_chat_log;
+}
+messagemanager::messagemanager(const int &user_id) {
+
+    message_network_manager = new networkmanager();
+
+    //pass user's user id into this
+    message_manager_socket = message_network_manager->setup_socket("MESSAGE_MANAGEMENT", user_id);
+
+    //here load all messages to data structure
+
+    std::vector<std::vector<std::string>> chats_temp = pull_all_chat_messages(message_manager_socket);
+
+    for(auto row : chats_temp)
+    {
+        std::cout << "Col 2: " << row[2] << " Col3: " << row[3] << std::endl;
+        if(!row.empty())
+        {
+            int sender_id = std::stoi(row[2]);
+            int receiver_id = std::stoi(row[3]);
+
+            if(sender_id == user_id)
+            {
+                message_memory_structure.insert({receiver_id, row});
+            }
+            else
+            {
+                message_memory_structure.insert({sender_id, row});
+            }
+            std::cout << "Message Content: " << row[4] << std::endl;
+        }
+    }
+
+}
+
+int messagemanager::get_message_manager_socket()
+{
+    return message_manager_socket;
+}
+
 
 void messagemanager::async_receive_messages(const int &message_manager_socket, MainWindow* mainWindow)
 {
@@ -151,6 +242,24 @@ std::vector<std::vector<std::string>> messagemanager::pull_init_chat_messages(in
     }
     else{qDebug() << "Error getting chat messages";}
     return empty_chat_log;
+}
+
+std::vector<std::vector<std::string>> messagemanager::get_messages_from_memory(const int &non_client_user_id)
+{
+    std::vector<std::vector<std::string>> chat_specific_logs;
+
+    for (const auto& row : message_memory_structure)
+    {
+        const std::vector<std::string>& message_data = row.second;  // row.second is the vector of strings (the message data)
+
+        if (std::stoi(message_data[2]) == non_client_user_id || std::stoi(message_data[3]) == non_client_user_id)
+        {
+            std::vector<std::string> temp_vct = {message_data[0], message_data[1], message_data[4]};
+            chat_specific_logs.push_back(temp_vct);
+        }
+    }
+
+    return chat_specific_logs;
 }
 
 

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <sys/socket.h>
+#include <unordered_map>
 
 class MainWindow;
 
@@ -16,10 +17,12 @@ public:
     void async_receive_messages(const int &message_manager_socket, MainWindow* mainWindow);
     void send_message(int client_socket, const QByteArray &data, const QString &type);
     std::vector<std::vector<std::string>> pull_init_chat_messages(int client_socket, const std::vector<int>& participants);
+    std::vector<std::vector<std::string>> get_messages_from_memory(const int &non_client_user_id);
 
 private:
     int message_manager_socket;
     networkmanager* message_network_manager;
+    std::unordered_multimap<int, std::vector<std::string>> message_memory_structure;
 };
 
 #endif // MESSAGEMANAGER_H

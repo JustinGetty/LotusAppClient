@@ -566,9 +566,13 @@ void MainWindow::handle_switch_to_chat_button(const int &user_id_chat)
 {
     //refactor this to pull only from memory instead of reemote server. All logs will be pulled once from server in seperate function
     std::cout << "switched to chat" << std::endl;
+    /*
     std::vector<int> members_in_chat;
     members_in_chat.push_back(user_id_chat);
-    std::vector<std::vector<std::string>> chat_logs = messageManager->pull_init_chat_messages(messageManager->get_message_manager_socket(), members_in_chat);
+    */
+
+    //this pulls any message that has either client_id as sender or receiver, with the relevant chat member as the other side
+    std::vector<std::vector<std::string>> chat_logs = messageManager->get_messages_from_memory(user_id_chat);
     std::cout << "starting layout setup" << std::endl;
 
     if(chat_logs.empty())
