@@ -23,7 +23,7 @@ std::vector<std::vector<std::string>> pull_all_chat_messages(int client_socket)
 
     std::cout << "Bytes sent for chat retrieval: " << bytes_sent << std::endl;
 
-    if(bytes_sent > -1)
+    if (bytes_sent > -1)
     {
         while (true)
         {
@@ -32,53 +32,65 @@ std::vector<std::vector<std::string>> pull_all_chat_messages(int client_socket)
 
             while (true)
             {
-                std::cout << "retrieving chat messages" << std::endl;
+                std::cout << "Retrieving chat messages..." << std::endl;
                 ssize_t status_bytes = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
 
                 if (status_bytes < 0)
                 {
-                    std::cerr << "Error receiving data from server" << std::endl;
+                    std::cerr << "Error receiving data from server." << std::endl;
                     return empty_chat_log;
                 }
                 else if (status_bytes == 0)
                 {
-                    std::cerr << "Chat log init connection closed by server" << std::endl;
+                    std::cerr << "Chat log init connection closed by server." << std::endl;
                     return empty_chat_log;
                 }
 
                 buffer[status_bytes] = '\0';
                 all_message_data += buffer;
-                std::cout << "Message data: " << all_message_data << std::endl;
+                std::cout << "Received data chunk: " << buffer << std::endl;
 
                 if (all_message_data.find("\\|") != std::string::npos || all_message_data.find("-") != std::string::npos)
                 {
                     break;
                 }
             }
-            if(all_message_data == "-\0")
+
+            if (all_message_data == "-")
             {
-                std::cout << "Termination signal received. Stopping reception of messages" << std::endl;
+                std::cout << "Termination signal received. Stopping reception of messages." << std::endl;
                 break;
             }
 
-            if(all_message_data.size() > 1)
+            if (all_message_data.size() > 1)
             {
                 std::string time_stamp = all_message_data.substr(0, all_message_data.find("\\+"));
                 std::string sender_username = extract_between(all_message_data, "\\+", "\\-");
                 std::string sender_id = extract_between(all_message_data, "\\-", "\\]");
-                std::string receiver_1= extract_between(all_message_data, "\\]", "\\[");
+                std::string receiver_1 = extract_between(all_message_data, "\\]", "\\[");
                 std::string message_contents = extract_between(all_message_data, "\\[", "\\|");
 
                 std::vector<std::string> temp_vct = {time_stamp, sender_username, sender_id, receiver_1, message_contents};
                 chat_log.push_back(temp_vct);
+
+                // Output parsed message details
+                std::cout << "Parsed message - Timestamp: " << time_stamp
+                          << ", Sender: " << sender_username
+                          << ", Sender ID: " << sender_id
+                          << ", Receiver ID: " << receiver_1
+                          << ", Message: " << message_contents << std::endl;
             }
         }
 
         return chat_log;
     }
-    else{qDebug() << "Error getting chat messages";}
+    else
+    {
+        std::cerr << "Error getting chat messages." << std::endl;
+    }
     return empty_chat_log;
 }
+
 messagemanager::messagemanager(const int &user_id) {
 
     message_network_manager = new networkmanager();

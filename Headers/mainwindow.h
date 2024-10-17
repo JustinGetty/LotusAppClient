@@ -29,6 +29,8 @@
 #include <vector>
 #include <QMovie>
 #include <QTimer>
+#include <QDateTime>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui {

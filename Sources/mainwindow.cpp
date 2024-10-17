@@ -92,6 +92,15 @@ void MainWindow::on_uploadButton_clicked()
 
 void MainWindow::handleSendMessageButtonClicked()
 {
+    QVariant embed_id = ui->Send_Message_Button->property("userID");
+    QString other_user_id = embed_id.toString();
+    std::string user_id_std_string = other_user_id.toStdString();
+    std::cout << "embed id: " << user_id_std_string << std::endl;
+
+    if(user_id_std_string.empty())
+    {
+        return;
+    }
     static bool isProcessing = false;  // Static variable to persist between function calls
 
     if (isProcessing) {
@@ -102,16 +111,12 @@ void MainWindow::handleSendMessageButtonClicked()
 
     ui->Send_Message_Button->setEnabled(false);
     std::cout << "SEND MESSAGE BUTTON CLICKED" << std::endl;
-    //this sucks I hate plain text type REFIG asap
+    //plain text type sucks REFIG asap
     user_message = ui->Message_Input_Label->toPlainText();
     ui->Message_Input_Label->clear();
 
     std::string messi = user_message.toStdString();
 
-    QVariant embed_id = ui->Send_Message_Button->property("userID");
-    QString other_user_id = embed_id.toString();
-    std::string user_id_std_string = other_user_id.toStdString();
-    std::cout << "embed id: " << user_id_std_string << std::endl;
 
     // types are text or image, that's it. Dont mess that up
     std::string header = "incoming_message\n";
@@ -121,6 +126,11 @@ void MainWindow::handleSendMessageButtonClicked()
     std::cout << test_message << std::endl;
 
     int bytes_sent_sec = send(messageManager->get_message_manager_socket(), test_message.c_str(), test_message.size(), 0);
+
+    QString currentTimestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
+    QString message_to_append = currentTimestamp + " Me: " + QString::fromStdString(messi);
+
+    addMessageToTextBrowser(message_to_append);
 
     ui->Send_Message_Button->setEnabled(true);
     isProcessing = false;  // Reset the flag when done
