@@ -25,50 +25,47 @@ std::vector<std::vector<std::string>> pull_all_chat_messages(int client_socket)
 
     if (bytes_sent > -1)
     {
+        std::string buffer_data;
         while (true)
         {
             char buffer[500] = {0};
-            std::string all_message_data;
+            ssize_t status_bytes = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
 
-            while (true)
+            if (status_bytes < 0)
             {
-                std::cout << "Retrieving chat messages..." << std::endl;
-                ssize_t status_bytes = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
-
-                if (status_bytes < 0)
-                {
-                    std::cerr << "Error receiving data from server." << std::endl;
-                    return empty_chat_log;
-                }
-                else if (status_bytes == 0)
-                {
-                    std::cerr << "Chat log init connection closed by server." << std::endl;
-                    return empty_chat_log;
-                }
-
-                buffer[status_bytes] = '\0';
-                all_message_data += buffer;
-                std::cout << "Received data chunk: " << buffer << std::endl;
-
-                if (all_message_data.find("\\|") != std::string::npos || all_message_data.find("-") != std::string::npos)
-                {
-                    break;
-                }
+                std::cerr << "Error receiving data from server." << std::endl;
+                return empty_chat_log;
+            }
+            else if (status_bytes == 0)
+            {
+                std::cerr << "Chat log connection closed by server." << std::endl;
+                return empty_chat_log;
             }
 
-            if (all_message_data == "-")
-            {
-                std::cout << "Termination signal received. Stopping reception of messages." << std::endl;
-                break;
-            }
+            buffer[status_bytes] = '\0';
+            buffer_data += buffer;
+            std::cout << "Received data chunk: " << buffer << std::endl;
 
-            if (all_message_data.size() > 1)
+            // Process complete messages in the buffer
+            size_t pos;
+            while ((pos = buffer_data.find("\\|")) != std::string::npos)
             {
-                std::string time_stamp = all_message_data.substr(0, all_message_data.find("\\+"));
-                std::string sender_username = extract_between(all_message_data, "\\+", "\\-");
-                std::string sender_id = extract_between(all_message_data, "\\-", "\\]");
-                std::string receiver_1 = extract_between(all_message_data, "\\]", "\\[");
-                std::string message_contents = extract_between(all_message_data, "\\[", "\\|");
+                std::string message = buffer_data.substr(0, pos + 2); // Extract message including "\\|"
+                buffer_data.erase(0, pos + 2); // Remove processed message from buffer
+
+                // Check if it's the termination signal
+                if (message == "-\\|" || "-")
+                {
+                    std::cout << "Termination signal received. Stopping reception of messages." << std::endl;
+                    return chat_log;
+                }
+
+                // Parse the message
+                std::string time_stamp = message.substr(0, message.find("\\+"));
+                std::string sender_username = extract_between(message, "\\+", "\\-");
+                std::string sender_id = extract_between(message, "\\-", "\\]");
+                std::string receiver_1 = extract_between(message, "\\]", "\\[");
+                std::string message_contents = extract_between(message, "\\[", "\\|");
 
                 std::vector<std::string> temp_vct = {time_stamp, sender_username, sender_id, receiver_1, message_contents};
                 chat_log.push_back(temp_vct);
@@ -81,15 +78,14 @@ std::vector<std::vector<std::string>> pull_all_chat_messages(int client_socket)
                           << ", Message: " << message_contents << std::endl;
             }
         }
-
-        return chat_log;
     }
     else
     {
-        std::cerr << "Error getting chat messages." << std::endl;
+        std::cerr << "Error sending chat retrieval request." << std::endl;
     }
     return empty_chat_log;
 }
+
 
 messagemanager::messagemanager(const int &user_id) {
 
