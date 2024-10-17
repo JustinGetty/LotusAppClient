@@ -18,11 +18,14 @@ public:
     void send_message(int client_socket, const QByteArray &data, const QString &type);
     std::vector<std::vector<std::string>> pull_init_chat_messages(int client_socket, const std::vector<int>& participants);
     std::vector<std::vector<std::string>> get_messages_from_memory(const int &non_client_user_id);
+    void set_user_id(int user_id);
+    int get_user_id();
 
 private:
     int message_manager_socket;
     networkmanager* message_network_manager;
     std::unordered_multimap<int, std::vector<std::string>> message_memory_structure;
+    int message_manager_user_id;
 };
 
 #endif // MESSAGEMANAGER_H

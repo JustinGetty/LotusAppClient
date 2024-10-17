@@ -27,6 +27,8 @@
 #include <QVBoxLayout>
 #include <utility>
 #include <vector>
+#include <QMovie>
+#include <QTimer>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -44,9 +46,10 @@ public:
     void setup_friend_requests();
     void setup_outbound_friend_requests();
     void set_friends_main_page();
+    int get_push_button_embed_id();
 
 private slots:
-    void on_Send_Message_Button_clicked();
+    void handleSendMessageButtonClicked();
     void on_uploadButton_clicked();
     void on_create_account_button_clicked();
     void on_login_account_button_clicked();
@@ -75,6 +78,7 @@ private:
     QWidget* createWidgetWithFrame(const QString &labelText, const int &user_id);
     QWidget* createWidgetNoButtons(const QString &labelText, const int &user_id);
     QWidget* createFriendWidget(const QString &labelText, const int &user_id);
+    QTextBrowser* currentChatTextBrowser;
 
 protected:
     //void keyPressEvent(QKeyEvent *event) override;  // Declaration in the header file

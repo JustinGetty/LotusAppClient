@@ -111,6 +111,15 @@ messagemanager::messagemanager(const int &user_id) {
     }
 
 }
+void messagemanager::set_user_id(int user_id)
+{
+    message_manager_user_id = user_id;
+}
+
+int messagemanager::get_user_id()
+{
+    return message_manager_user_id;
+}
 
 int messagemanager::get_message_manager_socket()
 {
@@ -120,32 +129,68 @@ int messagemanager::get_message_manager_socket()
 
 void messagemanager::async_receive_messages(const int &message_manager_socket, MainWindow* mainWindow)
 {
+    //if user currently in chat, immediately append to that chat
+    //if not in chat, show notifcation and add to memory logs
     //thread to recieve
+    // Thread to continuously receive messages from the server
     char buffer[1024];
     std::string accumulated_data;
-    while (true) {
 
+    while (true) {
+        int sender_id_global;
+        // Clear the buffer and receive incoming messages
         memset(buffer, 0, sizeof(buffer));
-        int bytes_received = recv(message_manager_socket, buffer, sizeof(buffer), 0);
+        ssize_t bytes_received = recv(message_manager_socket, buffer, sizeof(buffer) - 1, 0);
+
         if (bytes_received <= 0) {
             std::cerr << "Error receiving data or connection closed by server" << std::endl;
-            break;
+            break;  // Exit the loop if there's an error or the connection is closed
         }
 
-        accumulated_data.append(buffer, bytes_received);
+        buffer[bytes_received] = '\0';  // Null-terminate the buffer
+        accumulated_data += buffer;     // Accumulate data from the buffer
 
+        // Process complete messages, which end with "\\|"
         size_t pos;
-        while ((pos = accumulated_data.find('\n')) != std::string::npos) {
-            std::string message = accumulated_data.substr(0, pos + 1);
-            accumulated_data.erase(0, pos + 1);
+        while ((pos = accumulated_data.find("\\|")) != std::string::npos) {
+            // Extract the entire message up to the "\\|" delimiter
+            std::string all_message_data = accumulated_data.substr(0, pos + 2);  // Include the "\\|"
+            accumulated_data.erase(0, pos + 2);  // Remove the processed message from accumulated_data
 
-            if (!message.empty() && message.back() == '\n') {
-                message.pop_back();
+            if (all_message_data.size() > 1) {
+                // Parse the incoming message in the format: timestamp\\+username\\-user_id\\]receiver_id\\[message_contents\\|
+                std::string time_stamp = all_message_data.substr(0, all_message_data.find("\\+"));
+                std::string sender_username = extract_between(all_message_data, "\\+", "\\-");
+                std::string sender_id = extract_between(all_message_data, "\\-", "\\]");
+                std::string receiver_id = extract_between(all_message_data, "\\]", "\\[");
+                std::string message_contents = extract_between(all_message_data, "\\[", "\\|");
+                sender_id_global = std::stoi(sender_id);
+                // Create a vector to represent the parsed message data
+                std::vector<std::string> temp_vct = {time_stamp, sender_username, sender_id, receiver_id, message_contents};
+
+                // Insert the message into the message_memory_structure
+                if (std::stoi(sender_id) == message_manager_user_id) {
+                    message_memory_structure.insert({std::stoi(receiver_id), temp_vct});
+                } else {
+                    message_memory_structure.insert({std::stoi(sender_id), temp_vct});
+                }
+
+                // Print the extracted message for debugging
+                std::cout << "Message Received - Time: " << time_stamp << ", Sender: " << sender_username
+                          << ", Receiver: " << receiver_id << ", Message: " << message_contents << std::endl;
+
             }
-
+        }
+        if(mainWindow->get_push_button_embed_id() == sender_id_global)
+        {
             // Use Qt's signals/slots mechanism in the MainWindow class to update the UI
-            QString qMessage = QString::fromStdString(message);
-            QMetaObject::invokeMethod(mainWindow, "appendMessageToTextBrowser", Qt::QueuedConnection, Q_ARG(QString, qMessage));
+            //QString qMessage = QString::fromStdString(message);
+           // QMetaObject::invokeMethod(mainWindow, "appendMessageToTextBrowser", Qt::QueuedConnection, Q_ARG(QString, qMessage));
+
+        }
+        else
+        {
+            //somehow show notification, maybe move that chat to the top and highlight
         }
     }
 }

@@ -9,6 +9,8 @@
     3. Implement sending messages
     4. Add loading buffers and animations while content/data is loading/connecting
     5. Comprehensive error handling
+    6. change naming convention of all buttons, auto connecting slots likely causing issues
+    7. The last action to happen when client logs in is they should be shown as online on server side
 
     left off:
 */
@@ -88,20 +90,40 @@ void MainWindow::on_uploadButton_clicked()
 }
 
 
-void MainWindow::on_Send_Message_Button_clicked()
+void MainWindow::handleSendMessageButtonClicked()
 {
-    //fuck this fag ass plain text type REFIG asap
+    static bool isProcessing = false;  // Static variable to persist between function calls
+
+    if (isProcessing) {
+        return;  // Prevent re-entry if already processing
+    }
+
+    isProcessing = true;  // Set the flag
+
+    ui->Send_Message_Button->setEnabled(false);
+    std::cout << "SEND MESSAGE BUTTON CLICKED" << std::endl;
+    //this sucks I hate plain text type REFIG asap
     user_message = ui->Message_Input_Label->toPlainText();
     ui->Message_Input_Label->clear();
 
-    QByteArray Ronaldo = user_message.toUtf8();
+    std::string messi = user_message.toStdString();
 
-    //needs std string not  ass QString
-    //std::string messi = user_message.toStdString();
+    QVariant embed_id = ui->Send_Message_Button->property("userID");
+    QString other_user_id = embed_id.toString();
+    std::string user_id_std_string = other_user_id.toStdString();
+    std::cout << "embed id: " << user_id_std_string << std::endl;
 
-    //3 is client socket, too lazy to put in scope
     // types are text or image, that's it. Dont mess that up
+    std::string header = "incoming_message\n";
+    ssize_t bytes_sent = send(messageManager->get_message_manager_socket(), header.c_str(), header.size(), 0);
 
+    std::string test_message = active_user->get_active_user_username() + "\\-" + user_id_std_string + "\\+" + messi + "\\|";
+    std::cout << test_message << std::endl;
+
+    int bytes_sent_sec = send(messageManager->get_message_manager_socket(), test_message.c_str(), test_message.size(), 0);
+
+    ui->Send_Message_Button->setEnabled(true);
+    isProcessing = false;  // Reset the flag when done
 }
 
 
@@ -196,6 +218,7 @@ void MainWindow::on_login_account_button_clicked()
 //------CREATE THE MESSAGE AND RELATION THREADS HERE---------------
             messageManager = new messagemanager(active_user->get_user_id());
             int message_manager_socket = messageManager->get_message_manager_socket();
+            messageManager->set_user_id(active_user->get_user_id());
             std::thread message_management_thread([this, message_manager_socket] () {
                 messageManager->async_receive_messages(message_manager_socket, this);
             });
@@ -578,6 +601,8 @@ void MainWindow::handle_switch_to_chat_button(const int &user_id_chat)
     if(chat_logs.empty())
     {
         //empty layout
+        //maybe set text in middle that says "this chat is empty, start a conversation"
+        ui->EmptyChatLabel->setText("Start a conversation! :)");
     }
     QLayout* tempLayout = ui->TextBrowserParentWidget->layout();
     if (tempLayout) {
@@ -592,15 +617,18 @@ void MainWindow::handle_switch_to_chat_button(const int &user_id_chat)
     }
 
     // add new textBrowser to ui->TextBrowserParentWidget with chats
-    QTextBrowser* mainChatTextBrowser = new QTextBrowser;
-    mainChatTextBrowser->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    currentChatTextBrowser = new QTextBrowser;
+    currentChatTextBrowser->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(ui->TextBrowserParentWidget->layout());
     layout = new QVBoxLayout(ui->TextBrowserParentWidget);
     ui->TextBrowserParentWidget->setLayout(layout);
 
-    layout->addWidget(mainChatTextBrowser);
-    mainChatTextBrowser->setStyleSheet("QTextBrowser{ color: #000000; }");
+    layout->addWidget(currentChatTextBrowser);
+    currentChatTextBrowser->setStyleSheet("QTextBrowser{ color: #000000; }");
+
+    //embed the user_id of the other user in the chat to the send message button for later use
+    ui->Send_Message_Button->setProperty("userID", user_id_chat);
 
     for(auto row : chat_logs)
     {
@@ -612,8 +640,20 @@ void MainWindow::handle_switch_to_chat_button(const int &user_id_chat)
         else{sender = row[1];}
 
         std::string data = "[" + sender + "] " + row[2];
-        mainChatTextBrowser->append(QString::fromStdString(data));
+        currentChatTextBrowser->append(QString::fromStdString(data));
     }
+
+}
+
+int MainWindow::get_push_button_embed_id()
+{
+    QVariant embedded_id = ui->Send_Message_Button->property("userID");
+    int embedded_id_int = embedded_id.toInt();
+    return embedded_id_int;
+}
+
+void MainWindow::appendMessageToTextBrowser(const QString& message)
+{
 
 }
 
@@ -654,7 +694,7 @@ MainWindow::MainWindow(QWidget *parent)
     //std::thread manage_friends_thread([this]() { });
 
     //eventually connect and render these as neede, i.e in the function that loads them
-    connect(ui->Send_Message_Button, &QPushButton::clicked, this, &MainWindow::on_Send_Message_Button_clicked);
+    connect(ui->Send_Message_Button, &QPushButton::clicked, this, &MainWindow::handleSendMessageButtonClicked);
     connect(ui->uploadButton, &QPushButton::clicked, this, &MainWindow::on_uploadButton_clicked);
     disconnect(ui->create_account_button, &QPushButton::clicked, this, &MainWindow::on_create_account_button_clicked);
     connect(ui->create_account_button, &QPushButton::clicked, this, &MainWindow::on_create_account_button_clicked);
