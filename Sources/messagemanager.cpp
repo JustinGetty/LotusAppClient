@@ -155,31 +155,26 @@ void messagemanager::async_receive_messages(const int &message_manager_socket, M
 
         if (bytes_received <= 0) {
             std::cerr << "Error receiving data or connection closed by server" << std::endl;
-            break;  // Exit the loop if there's an error or the connection is closed
+            break;
         }
 
-        buffer[bytes_received] = '\0';  // Null-terminate the buffer
-        accumulated_data += buffer;     // Accumulate data from the buffer
+        buffer[bytes_received] = '\0';
+        accumulated_data += buffer;
 
-        // Process complete messages, which end with "\\|"
         size_t pos;
         while ((pos = accumulated_data.find("\\|")) != std::string::npos) {
-            // Extract the entire message up to the "\\|" delimiter
             std::string all_message_data = accumulated_data.substr(0, pos + 2);  // Include the "\\|"
             accumulated_data.erase(0, pos + 2);  // Remove the processed message from accumulated_data
 
             if (all_message_data.size() > 1) {
-                // Parse the incoming message in the format: timestamp\\+username\\-user_id\\]receiver_id\\[message_contents\\|
                 time_stamp = all_message_data.substr(0, all_message_data.find("\\+"));
                 sender_username = extract_between(all_message_data, "\\+", "\\-");
                 std::string sender_id = extract_between(all_message_data, "\\-", "\\]");
                 std::string receiver_id = extract_between(all_message_data, "\\]", "\\[");
                 message_contents = extract_between(all_message_data, "\\[", "\\|");
                 sender_id_global = std::stoi(sender_id);
-                // Create a vector to represent the parsed message data
                 std::vector<std::string> temp_vct = {time_stamp, sender_username, sender_id, receiver_id, message_contents};
 
-                // Insert the message into the message_memory_structure
                 if (std::stoi(sender_id) == message_manager_user_id) {
                     message_memory_structure.insert({std::stoi(receiver_id), temp_vct});
                 } else {
