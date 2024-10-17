@@ -138,6 +138,9 @@ void messagemanager::async_receive_messages(const int &message_manager_socket, M
 
     while (true) {
         int sender_id_global;
+        std::string time_stamp;
+        std::string sender_username;
+        std::string message_contents;
         // Clear the buffer and receive incoming messages
         memset(buffer, 0, sizeof(buffer));
         ssize_t bytes_received = recv(message_manager_socket, buffer, sizeof(buffer) - 1, 0);
@@ -159,11 +162,11 @@ void messagemanager::async_receive_messages(const int &message_manager_socket, M
 
             if (all_message_data.size() > 1) {
                 // Parse the incoming message in the format: timestamp\\+username\\-user_id\\]receiver_id\\[message_contents\\|
-                std::string time_stamp = all_message_data.substr(0, all_message_data.find("\\+"));
-                std::string sender_username = extract_between(all_message_data, "\\+", "\\-");
+                time_stamp = all_message_data.substr(0, all_message_data.find("\\+"));
+                sender_username = extract_between(all_message_data, "\\+", "\\-");
                 std::string sender_id = extract_between(all_message_data, "\\-", "\\]");
                 std::string receiver_id = extract_between(all_message_data, "\\]", "\\[");
-                std::string message_contents = extract_between(all_message_data, "\\[", "\\|");
+                message_contents = extract_between(all_message_data, "\\[", "\\|");
                 sender_id_global = std::stoi(sender_id);
                 // Create a vector to represent the parsed message data
                 std::vector<std::string> temp_vct = {time_stamp, sender_username, sender_id, receiver_id, message_contents};
@@ -184,8 +187,9 @@ void messagemanager::async_receive_messages(const int &message_manager_socket, M
         if(mainWindow->get_push_button_embed_id() == sender_id_global)
         {
             // Use Qt's signals/slots mechanism in the MainWindow class to update the UI
-            //QString qMessage = QString::fromStdString(message);
-           // QMetaObject::invokeMethod(mainWindow, "appendMessageToTextBrowser", Qt::QueuedConnection, Q_ARG(QString, qMessage));
+            std::string message = time_stamp + " " + sender_username + " " + message_contents;
+            QString qMessage = QString::fromStdString(message);
+            QMetaObject::invokeMethod(mainWindow, "addMessageToTextBrowser", Qt::QueuedConnection, Q_ARG(QString, qMessage));
 
         }
         else
