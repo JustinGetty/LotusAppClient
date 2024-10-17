@@ -86,7 +86,8 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 signals:
-    void appendMessageToTextBrowser(const QString& message);
+public slots:
+    void addMessageToTextBrowser(const QString& message);
 
 };
 

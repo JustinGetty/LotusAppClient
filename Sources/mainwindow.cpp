@@ -652,9 +652,8 @@ int MainWindow::get_push_button_embed_id()
     return embedded_id_int;
 }
 
-void MainWindow::appendMessageToTextBrowser(const QString& message)
-{
-
+void MainWindow::addMessageToTextBrowser(const QString &message) {
+    currentChatTextBrowser->append(message);  // Example implementation
 }
 
 MainWindow::MainWindow(QWidget *parent)
