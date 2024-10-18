@@ -736,17 +736,77 @@ void MainWindow::handle_refresh_conversations_button()
     set_friends_main_page();
 }
 
+QWidget* MainWindow::createWidgetWithCheckBox(const QString &labelText, const int &user_id)
+{
+    QFrame *frame = new QFrame;
+    frame->setFrameStyle(QFrame::Box);
+
+    frame->setStyleSheet(
+        "QFrame { "
+        "background-color: #f9f9f9; "
+        "border: 1px solid #dcdcdc; "
+        "border-radius: 8px; "
+        "padding: 8px; }"
+        );
+
+    QVBoxLayout *frameLayout = new QVBoxLayout(frame);
+    frameLayout->setContentsMargins(5, 5, 5, 5);
+
+    QLabel *label = new QLabel(labelText);
+    label->setStyleSheet("QLabel { color: #333333; font-size: 14px; }");
+
+    QCheckBox *checkBox = new QCheckBox();
+    checkBox->setProperty("UserID", user_id);
+
+    frameLayout->addWidget(label);
+    frameLayout->addWidget(checkBox);
+
+    connect(checkBox, &QCheckBox::stateChanged, this, [this, user_id](int state) {
+        handle_check_box_state_change(state, user_id);
+    });
+
+    return frame;
+
+
+}
+
+void MainWindow::handle_check_box_state_change(int state, int user_id)
+{
+    if(state == Qt::Checked) {
+        qDebug() << "Checkbox checked, ID: " << user_id;
+        //Add to list of users in chat array
+    } else {
+        qDebug() << "Checkbox is unchecked, ID: " << user_id;
+        //Remove from list of users in chat array
+    }
+
+}
+
+
 void MainWindow::handle_new_conversation_button()
 {
     //pull all friends, show check buttons next to them as friends to add. Add them with embnedded user_id in frame or button
-    ui->AddToConversationParentWidget->show();
+    ui->AddToConversationScrollArea->show();
     //show loading icon here
 
     std::vector<std::pair<std::string, int>> friends_list = relationsManager->get_friends_list_mem();
 
     QWidget* scrollWidget = new QWidget;
     QVBoxLayout* scrollLayout = new QVBoxLayout(scrollWidget);
-    //create widget with check box
+
+    if(friends_list.empty())
+    {
+        ui->AddToConversationScrollArea->setWidget(scrollWidget);
+        return;
+    }
+
+    for (const auto &row : friends_list)
+    {
+        QString labelText = QString::fromStdString(row.first);
+        scrollLayout->addWidget(createWidgetWithCheckBox(labelText, row.second));
+    }
+    scrollWidget->setLayout(scrollLayout);
+    ui->AddToConversationScrollArea->setWidget(scrollWidget);
 
 
 }
@@ -766,7 +826,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->Send_Message_Button->hide();
     ui->Message_Input_Label->hide();
     ui->uploadButton->hide();
-    ui->AddToConversationParentWidget->hide();
+    ui->AddToConversationScrollArea->hide();
 
     ui->friends_window->hide();
     ui->main_window->hide();

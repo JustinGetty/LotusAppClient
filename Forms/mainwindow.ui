@@ -733,15 +733,28 @@ li.checked::marker { content: &quot;\2612&quot;; }
          <string>It's quiet here. Click on a conversation to start chatting!</string>
         </property>
        </widget>
-       <widget class="QWidget" name="AddToConversationParentWidget" native="true">
+       <widget class="QScrollArea" name="AddToConversationScrollArea">
         <property name="geometry">
          <rect>
-          <x>300</x>
-          <y>108</y>
-          <width>343</width>
-          <height>488</height>
+          <x>331</x>
+          <y>145</y>
+          <width>261</width>
+          <height>375</height>
          </rect>
         </property>
+        <property name="widgetResizable">
+         <bool>true</bool>
+        </property>
+        <widget class="QWidget" name="scrollAreaWidgetContents_5">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>259</width>
+           <height>373</height>
+          </rect>
+         </property>
+        </widget>
        </widget>
       </widget>
       <widget class="QPushButton" name="RefreshConversations">

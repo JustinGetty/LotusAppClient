@@ -30,7 +30,7 @@
 #include <QMovie>
 #include <QTimer>
 #include <QDateTime>
-
+#include <QCheckBox>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -69,6 +69,7 @@ private slots:
     void handle_switch_to_chat_button(const int &user_id_chat);
     void handle_refresh_conversations_button();
     void handle_new_conversation_button();
+    void handle_check_box_state_change(int state, int user_id);
 
 private:
     Ui::MainWindow *ui;
@@ -84,6 +85,7 @@ private:
     QWidget* createWidgetNoButtons(const QString &labelText, const int &user_id);
     QWidget* createFriendWidget(const QString &labelText, const int &user_id);
     QWidget* createTextOnlyWidget(const QString &labelText, const int &user_id);
+    QWidget* createWidgetWithCheckBox(const QString &labelText, const int &user_id);
     QTextBrowser* currentChatTextBrowser;
 
 protected:
