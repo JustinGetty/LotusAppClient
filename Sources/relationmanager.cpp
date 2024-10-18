@@ -31,6 +31,32 @@ std::vector<std::pair<std::string, int>> relationmanager::get_friends_list_mem()
     return friends_list_in_memory;
 }
 
+void relationmanager::set_temp_convo_list(std::vector<int> convo_arr)
+{
+    temp_conversation_list = convo_arr;
+}
+
+std::vector<int> relationmanager::get_temp_convo_list()
+{
+    return temp_conversation_list;
+}
+
+void relationmanager::clear_temp_convo_list()
+{
+    std::vector<int> temp;
+    temp_conversation_list = temp;
+}
+
+void relationmanager::add_to_temp_convo_list(int user_id)
+{
+    temp_conversation_list.push_back(user_id);
+}
+
+void relationmanager::remove_from_temp_convo_list(int user_id)
+{
+    temp_conversation_list.erase(std::remove(temp_conversation_list.begin(), temp_conversation_list.end(), user_id), temp_conversation_list.end());
+}
+
 int relationmanager::update_friends_list_mem()
 {
     std::vector<std::pair<std::string, int>> temp_list = pull_friends_list(get_relation_manager_socket());

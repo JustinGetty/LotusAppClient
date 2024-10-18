@@ -24,11 +24,17 @@ public:
     void set_friends_list_mem(std::vector<std::pair<std::string, int>> friends_list);
     std::vector<std::pair<std::string, int>> get_friends_list_mem();
     int update_friends_list_mem();
+    void set_temp_convo_list(std::vector<int> convo_arr);
+    std::vector<int> get_temp_convo_list();
+    void clear_temp_convo_list();
+    void add_to_temp_convo_list(int user_id);
+    void remove_from_temp_convo_list(int user_id);
 
 private:
     int relation_manager_socket;
     networkmanager* relation_network_manager;
     std::vector<std::pair<std::string, int>> friends_list_in_memory;
+    std::vector<int> temp_conversation_list;
 };
 
 #endif // RELATIONMANAGER_H

@@ -70,6 +70,8 @@ private slots:
     void handle_refresh_conversations_button();
     void handle_new_conversation_button();
     void handle_check_box_state_change(int state, int user_id);
+    void handle_confirm_new_convo_button();
+    void handle_cancel_new_convo_button();
 
 private:
     Ui::MainWindow *ui;
