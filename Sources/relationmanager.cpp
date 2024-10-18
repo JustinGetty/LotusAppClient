@@ -21,6 +21,36 @@ int relationmanager::get_relation_manager_socket()
 {
     return relation_manager_socket;
 }
+void relationmanager::set_friends_list_mem(std::vector<std::pair<std::string, int> > friends_list)
+{
+    friends_list_in_memory = friends_list;
+}
+
+std::vector<std::pair<std::string, int>> relationmanager::get_friends_list_mem()
+{
+    return friends_list_in_memory;
+}
+
+int relationmanager::update_friends_list_mem()
+{
+    std::vector<std::pair<std::string, int>> temp_list = pull_friends_list(get_relation_manager_socket());
+    if(temp_list == friends_list_in_memory && !temp_list.empty())
+    {
+        std::cout << "No new friends" << std::endl;
+        return 1;
+    }
+    else if (temp_list.empty())
+    {
+        std::cerr << "Failed to update friends list" << std::endl;
+        return -1;
+    }
+    else
+    {
+        friends_list_in_memory = temp_list;
+        std::cout << "Successfully updated friends list" << std::endl;
+        return 0;
+    }
+}
 
 void relationmanager::send_friend_request(int socket, const std::string &data_to_send)
 {
@@ -72,6 +102,7 @@ std::vector<std::pair<std::string, int>> relationmanager::pull_inbound_friend_re
     std::string msg_type = "get_incoming_friends\n";
     std::vector<std::pair<std::string, int>> friend_requests;
     std::vector<std::pair<std::string, int>> empty_friend_requests;
+    bool last_iteration = false;
 
     // Send the request to the server
     if (send(client_socket, msg_type.c_str(), msg_type.size(), 0) == -1)
@@ -114,6 +145,10 @@ std::vector<std::pair<std::string, int>> relationmanager::pull_inbound_friend_re
             }
         }
 
+        if(user_id_data.back() == '-')
+        {
+            last_iteration = true;
+        }
 
         // If termination signal "-" is received, break the outer loop
         if (user_id_data == "-")
@@ -275,6 +310,7 @@ std::vector<std::pair<std::string, int>> relationmanager::pull_friends_list(int 
     std::string msg_type = "get_friends\n";
     std::vector<std::pair<std::string, int>> friends_list;
     std::vector<std::pair<std::string, int>> empty_friends_list;
+    std::string user_id_data;  // Declare outside to accumulate data across recv() calls
 
     // Send the request to the server
     if (send(client_socket, msg_type.c_str(), msg_type.size(), 0) == -1)
@@ -285,60 +321,72 @@ std::vector<std::pair<std::string, int>> relationmanager::pull_friends_list(int 
 
     while (true)
     {
+        std::cout << "pull_friends_list LOOP" << std::endl;
         char buffer[100] = {0};  // Ensure buffer is initialized to 0
-        std::string user_id_data;
 
-        // Inner loop to collect data until "|" is found
-        while (true)
+        // Receive data from the server
+        ssize_t status_bytes = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
+
+        if (status_bytes < 0)
         {
-            std::cout << "Receiving friends list" << std::endl;
-            ssize_t status_bytes = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
+            std::cerr << "Error receiving data from server" << std::endl;
+            return empty_friends_list;
+        }
+        else if (status_bytes == 0)
+        {
+            std::cerr << "Friends list connection closed by server" << std::endl;
+            return empty_friends_list;
+        }
 
-            if (status_bytes < 0)
+        buffer[status_bytes] = '\0';
+        user_id_data += buffer;
+
+        std::cout << "User ID Data: " << user_id_data << std::endl;
+
+        // Process all complete messages in user_id_data
+        size_t pos;
+        while ((pos = user_id_data.find("|")) != std::string::npos)
+        {
+            std::string message = user_id_data.substr(0, pos);
+            user_id_data.erase(0, pos + 1);  // Remove processed message including '|'
+
+            if (message == "-")
             {
-                std::cerr << "Error receiving data from server" << std::endl;
-                return empty_friends_list;
+                std::cout << "Termination signal received. Stopping reception of friends list." << std::endl;
+                return friends_list;
             }
-            else if (status_bytes == 0)
+
+            if (!message.empty())
             {
-                std::cerr << "Friends list connection closed by server" << std::endl;
-                return empty_friends_list;
-            }
+                size_t plus_pos = message.find("+");
+                if (plus_pos == std::string::npos)
+                {
+                    std::cerr << "Invalid message format: " << message << std::endl;
+                    continue;
+                }
 
-            buffer[status_bytes] = '\0';
-            user_id_data += buffer;
+                int friend_id = std::stoi(message.substr(0, plus_pos));
+                std::string friend_username = message.substr(plus_pos + 1);
 
-            std::cout << "User ID Data: " << user_id_data << std::endl;
-
-            // Check if the message contains the delimiter "|"
-            if (user_id_data.find("|") != std::string::npos || user_id_data.find("-") != std::string::npos)
-            {
-                break;
+                friends_list.push_back({friend_username, friend_id});
+                std::cout << "Parsed Friend - ID: " << friend_id << ", Username: " << friend_username << std::endl;
             }
         }
 
-
-        // If termination signal "-" is received, break the outer loop
+        // Check if the termination signal "-" is in the remaining data
         if (user_id_data == "-")
         {
             std::cout << "Termination signal received. Stopping reception of friends list." << std::endl;
-            break;
+            return friends_list;
         }
 
-        // Process the friend request if it's not empty or the termination signal
-        if (user_id_data.size() > 1)
-        {
-            int friend_id = std::stoi(user_id_data.substr(0, user_id_data.find("+")));
-            std::string friend_username = user_id_data.substr(user_id_data.find("+") + 1, user_id_data.find("|") - user_id_data.find("+") - 1);
-            friends_list.push_back({friend_username, friend_id});
-        }
-
-        // Clear the user_id_data after processing each entry
-        user_id_data.clear();
+        // If user_id_data contains other data without a complete message, continue to the next iteration to receive more data
     }
 
+    // This point should never be reached
     return friends_list;
 }
+
 
 
 

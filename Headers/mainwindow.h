@@ -49,6 +49,7 @@ public:
     void setup_outbound_friend_requests();
     void set_friends_main_page();
     int get_push_button_embed_id();
+    void setup_friends_list();
 
 private slots:
     void handleSendMessageButtonClicked();
@@ -66,6 +67,8 @@ private slots:
     void on_refresh_friend_requests_btn_clicked();
     void on_to_main_from_friends_btn_clicked();
     void handle_switch_to_chat_button(const int &user_id_chat);
+    void handle_refresh_conversations_button();
+    void handle_new_conversation_button();
 
 private:
     Ui::MainWindow *ui;
@@ -80,6 +83,7 @@ private:
     QWidget* createWidgetWithFrame(const QString &labelText, const int &user_id);
     QWidget* createWidgetNoButtons(const QString &labelText, const int &user_id);
     QWidget* createFriendWidget(const QString &labelText, const int &user_id);
+    QWidget* createTextOnlyWidget(const QString &labelText, const int &user_id);
     QTextBrowser* currentChatTextBrowser;
 
 protected:

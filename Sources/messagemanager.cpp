@@ -15,8 +15,11 @@ std::string extract_between(const std::string& data, const std::string& start_de
 
 std::vector<std::vector<std::string>> pull_all_chat_messages(int client_socket)
 {
+
+    std::cout << "pull_all_chat_messages" << std::endl;
     std::vector<std::vector<std::string>> empty_chat_log;
     std::vector<std::vector<std::string>> chat_log;
+    bool last_iteration = false;
 
     const char* type = "get_all_chats\n";
     ssize_t bytes_sent = send(client_socket, type, strlen(type), 0);
@@ -46,12 +49,26 @@ std::vector<std::vector<std::string>> pull_all_chat_messages(int client_socket)
             buffer_data += buffer;
             std::cout << "Received data chunk: " << buffer << std::endl;
 
+            char first_char = buffer_data.front();
+            if (first_char == '-')
+            {
+                return chat_log;
+            }
+
             // Process complete messages in the buffer
             size_t pos;
             while ((pos = buffer_data.find("\\|")) != std::string::npos)
             {
+                std::cout << "HERE" << std::endl;
                 std::string message = buffer_data.substr(0, pos + 2); // Extract message including "\\|"
                 buffer_data.erase(0, pos + 2); // Remove processed message from buffer
+
+                char last_char = message.back();
+
+                if(last_char == '-')
+                {
+                    last_iteration = true;
+                }
 
                 // Check if it's the termination signal
                 if (message == "-\\|" || "-")
@@ -76,6 +93,10 @@ std::vector<std::vector<std::string>> pull_all_chat_messages(int client_socket)
                           << ", Sender ID: " << sender_id
                           << ", Receiver ID: " << receiver_1
                           << ", Message: " << message_contents << std::endl;
+                if(last_iteration == true)
+                {
+                    break;
+                }
             }
         }
     }
@@ -149,7 +170,6 @@ void messagemanager::async_receive_messages(const int &message_manager_socket, M
         std::string time_stamp;
         std::string sender_username;
         std::string message_contents;
-        // Clear the buffer and receive incoming messages
         memset(buffer, 0, sizeof(buffer));
         ssize_t bytes_received = recv(message_manager_socket, buffer, sizeof(buffer) - 1, 0);
 
@@ -272,7 +292,7 @@ std::vector<std::vector<std::string>> messagemanager::pull_init_chat_messages(in
                     break;
                 }
             }
-            if(all_message_data == "-\0")
+            if(all_message_data == "-\0" || all_message_data == "-")
             {
                 std::cout << "Termination signal received. Stopping reception of messages" << std::endl;
                 break;

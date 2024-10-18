@@ -11,6 +11,7 @@
     5. Comprehensive error handling
     6. change naming convention of all buttons, auto connecting slots likely causing issues
     7. The last action to happen when client logs in is they should be shown as online on server side
+    8. Have thread that can check if user is online, if so, display symbol
 
     left off:
 */
@@ -236,6 +237,8 @@ void MainWindow::on_login_account_button_clicked()
 
             relationsManager = new relationmanager(active_user->get_user_id());
             int relations_manager_socket = relationsManager->get_relation_manager_socket();
+            std::vector<std::pair<std::string, int>> friends_list_persistent_memory = relationsManager->pull_friends_list(relationsManager->get_relation_manager_socket());
+            relationsManager->set_friends_list_mem(friends_list_persistent_memory);
             std::thread relations_management_thread([this, relations_manager_socket] () {
                 relationsManager->async_manage_requests(relations_manager_socket, this);
             });
@@ -303,6 +306,60 @@ void MainWindow::on_refresh_friend_requests_btn_clicked()
     std::cout << "Fetched Incoming Requests" << std::endl;
     setup_outbound_friend_requests();
     std::cout << "Fetched Outbound Requests" << std::endl;
+    setup_friends_list();
+}
+QWidget* MainWindow::createTextOnlyWidget(const QString &labelText, const int &user_id)
+{
+    QFrame *frame = new QFrame;
+    frame->setFrameStyle(QFrame::Box);
+
+    frame->setStyleSheet(
+        "QFrame { "
+        "background-color: #f9f9f9; "
+        "border: 1px solid #dcdcdc; "
+        "border-radius: 8px; "
+        "padding: 8px; }"
+        );
+
+    QVBoxLayout *frameLayout = new QVBoxLayout(frame);
+    frameLayout->setContentsMargins(5, 5, 5, 5); // Reduce margins to make the widget smaller
+
+    QLabel *label = new QLabel(labelText);
+    label->setStyleSheet("QLabel { color: #333333; font-size: 14px; }");
+
+    frameLayout->addWidget(label);
+
+    frame->setProperty("embed_user_id", QVariant(user_id));
+
+    return frame;
+}
+
+
+void MainWindow::setup_friends_list()
+{
+    //pull all friends
+    relationsManager->update_friends_list_mem();
+    std::vector<std::pair<std::string, int>> friends_list = relationsManager->get_friends_list_mem();
+
+    QWidget* scrollWidget = new QWidget;
+    QVBoxLayout* scrollLayout = new QVBoxLayout(scrollWidget);
+
+    if(friends_list.empty())
+    {
+        ui->scroll_area_friends_list->setWidget(scrollWidget);
+        return;
+    }
+
+    for (const auto &data : friends_list)
+    {
+        std::cout << "Friend list Username: " << data.first << ", ID: " << data.second << std::endl;
+        QString labelText = QString::fromStdString(data.first);
+        scrollLayout->addWidget(createTextOnlyWidget(labelText, data.second));
+    }
+    //scrollAreaMainPageFriends
+
+    scrollWidget->setLayout(scrollLayout);
+    ui->scroll_area_friends_list->setWidget(scrollWidget);
 }
 
 void MainWindow::switch_to_friends_view()
@@ -312,6 +369,7 @@ void MainWindow::switch_to_friends_view()
     std::cout << "Fetched Incoming Requests" << std::endl;
     setup_outbound_friend_requests();
     std::cout << "Fetched Outbound Requests" << std::endl;
+    setup_friends_list();
     ui->main_window->hide();
     ui->friends_window->show();
 }
@@ -501,6 +559,7 @@ void MainWindow::handle_accept_friend_request_button(){
         }
     }
     setup_friend_requests();
+    set_friends_main_page();
 }
 
 void MainWindow::handle_decline_friend_request_button(){
@@ -572,7 +631,7 @@ void MainWindow::setup_outbound_friend_requests()
 void MainWindow::set_friends_main_page()
 {
 
-    std::vector<std::pair<std::string, int>> friends_list = relationsManager->pull_friends_list(relationsManager->get_relation_manager_socket());
+    std::vector<std::pair<std::string, int>> friends_list = relationsManager->get_friends_list_mem();
 
     QWidget* scrollWidget = new QWidget;
     QVBoxLayout* scrollLayout = new QVBoxLayout(scrollWidget);
@@ -599,6 +658,11 @@ void MainWindow::handle_switch_to_chat_button(const int &user_id_chat)
 {
     //refactor this to pull only from memory instead of reemote server. All logs will be pulled once from server in seperate function
     std::cout << "switched to chat" << std::endl;
+
+    ui->EmptyChatLabel->hide();
+    ui->Send_Message_Button->show();
+    ui->Message_Input_Label->show();
+    ui->uploadButton->show();
     /*
     std::vector<int> members_in_chat;
     members_in_chat.push_back(user_id_chat);
@@ -666,6 +730,27 @@ void MainWindow::addMessageToTextBrowser(const QString &message) {
     currentChatTextBrowser->append(message);  // Example implementation
 }
 
+void MainWindow::handle_refresh_conversations_button()
+{
+    std::cout << "Refreshing conversations..." << std::endl;
+    set_friends_main_page();
+}
+
+void MainWindow::handle_new_conversation_button()
+{
+    //pull all friends, show check buttons next to them as friends to add. Add them with embnedded user_id in frame or button
+    ui->AddToConversationParentWidget->show();
+    //show loading icon here
+
+    std::vector<std::pair<std::string, int>> friends_list = relationsManager->get_friends_list_mem();
+
+    QWidget* scrollWidget = new QWidget;
+    QVBoxLayout* scrollLayout = new QVBoxLayout(scrollWidget);
+    //create widget with check box
+
+
+}
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -677,6 +762,11 @@ MainWindow::MainWindow(QWidget *parent)
     if (!ui->create_account) std::cerr << "create_account is null!" << std::endl;
     if (!ui->login_window) std::cerr << "login_window is null!" << std::endl;
     if (!ui->main_window) std::cerr << "main_window is null!" << std::endl;
+
+    ui->Send_Message_Button->hide();
+    ui->Message_Input_Label->hide();
+    ui->uploadButton->hide();
+    ui->AddToConversationParentWidget->hide();
 
     ui->friends_window->hide();
     ui->main_window->hide();
@@ -712,6 +802,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->switch_to_login_view, &QPushButton::clicked, this, &MainWindow::switch_to_login_account_view);
     connect(ui->add_friend_window_btn, &QPushButton::clicked, this, &MainWindow::switch_to_friends_view);
     connect(ui->user_search_button, &QPushButton::clicked, this, &MainWindow::send_friend_request);
+    connect(ui->RefreshConversations, &QPushButton::clicked, this, &MainWindow::handle_refresh_conversations_button);
+    connect(ui->NewConversationButton, &QPushButton::clicked, this, &MainWindow::handle_new_conversation_button);
     bool isConnected = connect(ui->refresh_friend_requests_btn, &QPushButton::clicked, this, &MainWindow::on_refresh_friend_requests_btn_clicked);
     if (!isConnected) {
         qDebug() << "Connection to refresh_friend_requests_btn failed!";
