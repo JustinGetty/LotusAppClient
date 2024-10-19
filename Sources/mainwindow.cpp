@@ -769,15 +769,16 @@ QWidget* MainWindow::createWidgetWithCheckBox(const QString &labelText, const in
 
 
 }
-
 void MainWindow::handle_check_box_state_change(int state, int user_id)
 {
     if(state == Qt::Checked) {
         qDebug() << "Checkbox checked, ID: " << user_id;
         //Add to list of users in chat array
+        relationsManager->add_to_temp_convo_list(user_id);
     } else {
         qDebug() << "Checkbox is unchecked, ID: " << user_id;
         //Remove from list of users in chat array
+        relationsManager->remove_from_temp_convo_list(user_id);
     }
 
 }
@@ -786,7 +787,7 @@ void MainWindow::handle_check_box_state_change(int state, int user_id)
 void MainWindow::handle_new_conversation_button()
 {
     //pull all friends, show check buttons next to them as friends to add. Add them with embnedded user_id in frame or button
-    ui->AddToConversationScrollArea->show();
+    ui->new_conversation_frame->show();
     //show loading icon here
 
     std::vector<std::pair<std::string, int>> friends_list = relationsManager->get_friends_list_mem();
@@ -807,8 +808,25 @@ void MainWindow::handle_new_conversation_button()
     }
     scrollWidget->setLayout(scrollLayout);
     ui->AddToConversationScrollArea->setWidget(scrollWidget);
+}
 
+void MainWindow::handle_confirm_new_convo_button()
+{
+    std::vector<int> conversation_members = relationsManager->get_temp_convo_list();
+    for(auto &value : conversation_members)
+    {
+        std::cout << "Conversation Member ID: " << value << std::endl;
+    }
+    //relationsManager->insert_new_conversation(conversation_members);
 
+    relationsManager->clear_temp_convo_list();
+    ui->new_conversation_frame->hide();
+}
+
+void MainWindow::handle_cancel_new_convo_button()
+{
+    relationsManager->clear_temp_convo_list();
+    ui->new_conversation_frame->hide();
 }
 
 MainWindow::MainWindow(QWidget *parent)
@@ -826,7 +844,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->Send_Message_Button->hide();
     ui->Message_Input_Label->hide();
     ui->uploadButton->hide();
-    ui->AddToConversationScrollArea->hide();
+    ui->new_conversation_frame->hide();
 
     ui->friends_window->hide();
     ui->main_window->hide();
@@ -864,6 +882,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->user_search_button, &QPushButton::clicked, this, &MainWindow::send_friend_request);
     connect(ui->RefreshConversations, &QPushButton::clicked, this, &MainWindow::handle_refresh_conversations_button);
     connect(ui->NewConversationButton, &QPushButton::clicked, this, &MainWindow::handle_new_conversation_button);
+    connect(ui->ConfirmNewConversationButton, &QPushButton::clicked, this, &MainWindow::handle_confirm_new_convo_button);
+    connect(ui->CancelNewConversationButton, &QPushButton::clicked, this, &MainWindow::handle_cancel_new_convo_button);
     bool isConnected = connect(ui->refresh_friend_requests_btn, &QPushButton::clicked, this, &MainWindow::on_refresh_friend_requests_btn_clicked);
     if (!isConnected) {
         qDebug() << "Connection to refresh_friend_requests_btn failed!";

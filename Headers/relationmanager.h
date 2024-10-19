@@ -29,6 +29,7 @@ public:
     void clear_temp_convo_list();
     void add_to_temp_convo_list(int user_id);
     void remove_from_temp_convo_list(int user_id);
+    int insert_new_conversation(std::vector<int> member_list);
 
 private:
     int relation_manager_socket;

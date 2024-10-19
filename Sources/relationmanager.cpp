@@ -77,6 +77,36 @@ int relationmanager::update_friends_list_mem()
         return 0;
     }
 }
+int relationmanager::insert_new_conversation(std::vector<int> member_list)
+{
+    //send to server
+    std::string msg_type = "new_conversation";
+
+    std::string buffer;
+    for(auto &id : member_list)
+    {
+        buffer += id + "-";
+    }
+    buffer += "|";
+
+    ssize_t bytes_sent = send(relation_manager_socket, msg_type.c_str(), msg_type.size(), 0);
+
+    if (bytes_sent >  -1)
+    {
+        ssize_t bytes_sent_sec = send(relation_manager_socket, buffer.c_str(), buffer.size(), 0);
+        //get confirmation as error handling
+        if(bytes_sent_sec > -1)
+        {
+            std::cout << "Successfull insertion" << std::endl;
+            return 0;
+        }
+    }
+
+    else {
+        std::cout << "Failed to insert new conversation" << std::endl;
+        return -1;
+    }
+}
 
 void relationmanager::send_friend_request(int socket, const std::string &data_to_send)
 {
