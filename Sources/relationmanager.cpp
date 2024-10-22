@@ -16,6 +16,17 @@ void relationmanager::async_manage_requests(const int &relation_manager_socket, 
     //should a signal be recieved, just call setup_friend_requests()
 }
 
+std::string getValueByKey(const std::vector<std::pair<std::string, int>> &pairs, const int key)
+{
+    for (const auto&p : pairs)
+    {
+        if (p.second == key)
+        {
+            return std::to_string(p.second);
+        }
+    }
+    return "ERROR GETTING KEY";
+}
 
 int relationmanager::get_relation_manager_socket()
 {
@@ -80,20 +91,26 @@ int relationmanager::update_friends_list_mem()
 int relationmanager::insert_new_conversation(std::vector<int> member_list)
 {
     //send to server
-    std::string msg_type = "new_conversation";
+    std::string msg_type = "new_conversation\n";
 
-    std::string buffer;
-    for(auto &id : member_list)
+    for(auto &m : member_list)
     {
-        buffer += id + "-";
+        std::cout << "m: " << m << std::endl;
     }
-    buffer += "|";
+
+    std::string temp_buffer = "";
+    for(auto k : member_list)
+    {
+        temp_buffer += std::to_string(k) + "-";
+    }
+    temp_buffer += "|";
+    std::cout << "Buffer to be sent: " << temp_buffer << std::endl;
 
     ssize_t bytes_sent = send(relation_manager_socket, msg_type.c_str(), msg_type.size(), 0);
 
     if (bytes_sent >  -1)
     {
-        ssize_t bytes_sent_sec = send(relation_manager_socket, buffer.c_str(), buffer.size(), 0);
+        ssize_t bytes_sent_sec = send(relation_manager_socket, temp_buffer.c_str(), temp_buffer.size(), 0);
         //get confirmation as error handling
         if(bytes_sent_sec > -1)
         {
@@ -429,7 +446,6 @@ std::vector<std::pair<std::string, int>> relationmanager::pull_friends_list(int 
             }
         }
 
-        // Check if the termination signal "-" is in the remaining data
         if (user_id_data == "-")
         {
             std::cout << "Termination signal received. Stopping reception of friends list." << std::endl;
@@ -441,6 +457,117 @@ std::vector<std::pair<std::string, int>> relationmanager::pull_friends_list(int 
 
     // This point should never be reached
     return friends_list;
+}
+
+std::vector<std::vector<std::pair<std::string, int>>> relationmanager::pull_user_conversations()
+{
+    std::string msg_type = "get_user_convos\n";
+    std::vector<std::vector<std::pair<std::string, int>>> conversation_list;
+    std::vector<std::vector<std::pair<std::string, int>>> empty_conversation_list;
+    std::string inbound_data;
+
+    if (send(get_relation_manager_socket(), msg_type.c_str(), msg_type.size(), 0) == -1)
+    {
+        std::cerr << "Unable to establish connection with server: ERROR receiving conversations" << std::endl;
+        return empty_conversation_list;
+    }
+    bool flag = false;
+
+    while (!flag)
+    {
+        std::vector<std::pair<std::string, int>> trunc_convo_vectr;
+
+        while (true)
+        {
+            char buffer[999] = {0};
+            ssize_t status_bytes = recv(get_relation_manager_socket(), buffer, sizeof(buffer) - 1, 0);
+
+            if (status_bytes < 0)
+            {
+                std::cerr << "Error receiving data from the server" << std::endl;
+                return empty_conversation_list;
+            }
+            else if (status_bytes == 0)
+            {
+                std::cerr << "Conversation pull connection closed by server" << std::endl;
+                return empty_conversation_list;
+            }
+
+            buffer[status_bytes] = '\0';
+            inbound_data += buffer;
+
+            size_t pos;
+            while ((pos = inbound_data.find("|")) != std::string::npos)
+            {
+                std::string mess = inbound_data.substr(0, pos);
+                inbound_data.erase(0, pos + 1);
+
+                if (mess == "--")
+                {
+                    flag = true; // Signal to stop receiving conversations
+                    break;
+                }
+
+                if (mess == "-")
+                {
+                    // End of the current conversation, add it to the list
+                    if (!trunc_convo_vectr.empty())
+                    {
+                        conversation_list.push_back(trunc_convo_vectr);
+                    }
+                    break; // Exit the inner while loop to process the next conversation
+                }
+
+                if (!mess.empty())
+                {
+                    size_t plus_pos = mess.find("+");
+                    if (plus_pos == std::string::npos)
+                    {
+                        std::cerr << "Invalid message format: " << mess << std::endl;
+                        continue;
+                    }
+
+                    // Parse the ID and username
+                    int conversation_user_id = std::stoi(mess.substr(0, plus_pos));
+                    std::string conversation_user_username = mess.substr(plus_pos + 1);
+                    trunc_convo_vectr.push_back({conversation_user_username, conversation_user_id});
+                    std::cout << "Parsed Friend - ID: " << conversation_user_id << ", Username: " << conversation_user_username << std::endl;
+                }
+            }
+
+            // If we received the "-" termination signal, break out of the outer loop
+            if (inbound_data == "-")
+            {
+                break;
+            }
+
+            // If we received the "--" termination signal, break out of both loops
+            if (inbound_data == "--")
+            {
+                flag = true;
+                break;
+            }
+        }
+    }
+
+    return conversation_list;
+}
+
+
+
+int relationmanager::update_conversations_glob()
+{
+    std::vector<std::vector<std::pair<std::string, int>>> temp_conversations = pull_user_conversations();
+    if (temp_conversations == conversations_mem_load)
+    {
+        //nothing to update/broken update
+        return -1;
+    }
+    else
+    {
+        conversations_mem_load = temp_conversations;
+        return 0;
+    }
 }
 
 

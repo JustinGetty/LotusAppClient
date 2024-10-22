@@ -12,6 +12,7 @@
     6. change naming convention of all buttons, auto connecting slots likely causing issues
     7. The last action to happen when client logs in is they should be shown as online on server side
     8. Have thread that can check if user is online, if so, display symbol
+    9. Longterm, switch to json and api's lmao
 
     left off:
 */
@@ -276,7 +277,7 @@ void MainWindow::set_mainview_objects_tot()
 {
     QString username_text = "User signed in: " + QString::fromStdString(active_user->get_active_user_username());
     ui->active_user_label->setText(username_text);
-    set_friends_main_page();
+    set_conversations_main_page();
 
 
 }
@@ -295,6 +296,7 @@ void MainWindow::switch_to_login_account_view()
 
 void MainWindow::switch_to_main_view_after_login()
 {
+    //re-render main friends and others here
     ui->login_window->hide();
     ui->main_window->show();
 }
@@ -559,7 +561,7 @@ void MainWindow::handle_accept_friend_request_button(){
         }
     }
     setup_friend_requests();
-    set_friends_main_page();
+    set_conversations_main_page();
 }
 
 void MainWindow::handle_decline_friend_request_button(){
@@ -628,7 +630,7 @@ void MainWindow::setup_outbound_friend_requests()
     scrollWidget->setLayout(scrollLayout);
     ui->scroll_area_outgoing_requests->setWidget(scrollWidget);  // Outgoing requests scroll area
 }
-void MainWindow::set_friends_main_page()
+void MainWindow::set_conversations_main_page()
 {
 
     std::vector<std::pair<std::string, int>> friends_list = relationsManager->get_friends_list_mem();
@@ -733,7 +735,8 @@ void MainWindow::addMessageToTextBrowser(const QString &message) {
 void MainWindow::handle_refresh_conversations_button()
 {
     std::cout << "Refreshing conversations..." << std::endl;
-    set_friends_main_page();
+    //set_conversations_main_page();
+    relationsManager->update_conversations_glob();
 }
 
 QWidget* MainWindow::createWidgetWithCheckBox(const QString &labelText, const int &user_id)
@@ -772,13 +775,25 @@ QWidget* MainWindow::createWidgetWithCheckBox(const QString &labelText, const in
 void MainWindow::handle_check_box_state_change(int state, int user_id)
 {
     if(state == Qt::Checked) {
-        qDebug() << "Checkbox checked, ID: " << user_id;
+        std::cout << "Checkbox checked, ID: " << user_id << std::endl;
         //Add to list of users in chat array
         relationsManager->add_to_temp_convo_list(user_id);
+        int count = 0;
+        for (auto &i : relationsManager->get_temp_convo_list())
+        {
+            std::cout << "Conversation Member " << count << ": " << i << std::endl;
+            count += 1;
+        }
     } else {
-        qDebug() << "Checkbox is unchecked, ID: " << user_id;
+        std::cout << "Checkbox is unchecked, ID: " << user_id << std::endl;
         //Remove from list of users in chat array
         relationsManager->remove_from_temp_convo_list(user_id);
+        int count = 0;
+        for (auto &i : relationsManager->get_temp_convo_list())
+        {
+            std::cout << "Conversation Member " << count << ": "  << i << std::endl;
+            count += 1;
+        }
     }
 
 }
@@ -817,7 +832,7 @@ void MainWindow::handle_confirm_new_convo_button()
     {
         std::cout << "Conversation Member ID: " << value << std::endl;
     }
-    //relationsManager->insert_new_conversation(conversation_members);
+    relationsManager->insert_new_conversation(conversation_members);
 
     relationsManager->clear_temp_convo_list();
     ui->new_conversation_frame->hide();

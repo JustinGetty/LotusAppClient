@@ -47,7 +47,7 @@ public:
     ~MainWindow();
     void setup_friend_requests();
     void setup_outbound_friend_requests();
-    void set_friends_main_page();
+    void set_conversations_main_page();
     int get_push_button_embed_id();
     void setup_friends_list();
 
