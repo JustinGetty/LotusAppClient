@@ -892,6 +892,7 @@ void MainWindow::handle_new_conversation_button()
 {
     //pull all friends, show check buttons next to them as friends to add. Add them with embnedded user_id in frame or button
     ui->new_conversation_frame->show();
+    ui->new_conversation_frame->raise();
     //show loading icon here
 
     std::vector<std::pair<std::string, int>> friends_list = relationsManager->get_friends_list_mem();
@@ -924,6 +925,7 @@ void MainWindow::handle_confirm_new_convo_button()
     relationsManager->insert_new_conversation(conversation_members);
 
     relationsManager->clear_temp_convo_list();
+    set_conversations_main_page();
     ui->new_conversation_frame->hide();
 }
 
