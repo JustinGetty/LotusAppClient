@@ -495,7 +495,7 @@ QWidget* MainWindow::createWidgetNoButtons(const QString &labelText, const int &
 
     return frame;
 }
-
+/*
 QWidget* MainWindow::createFriendWidget(const QString &labelText, const int &user_id) {
     QFrame *frame = new QFrame;
     frame->setFrameStyle(QFrame::Box);
@@ -539,7 +539,88 @@ QWidget* MainWindow::createFriendWidget(const QString &labelText, const int &use
 
     return frame;
 }
+*/
+QWidget* MainWindow::createMainConversationWidget(std::vector<std::pair<std::string, int>> iso_convo)
+{
 
+    QFrame *frame = new QFrame;
+    frame->setFrameStyle(QFrame::Box);
+
+    // New style to make it look nicer
+    frame->setStyleSheet(
+        "QFrame { "
+        "background-color: #f9f9f9; "
+        "border: 1px solid #dcdcdc; "
+        "border-radius: 8px; "
+        "padding: 8px; }"
+        );
+
+    QVBoxLayout *frameLayout = new QVBoxLayout(frame);
+    frameLayout->setContentsMargins(5, 5, 5, 5); // Reduce margins to make the widget smaller
+
+    std::string convo_name = iso_convo[0].first;
+    int convo_id = iso_convo[0].second;
+    iso_convo.erase(iso_convo.begin());
+
+    QLabel *conversationName = new QLabel();
+    if(iso_convo.size() == 1)
+    {
+        conversationName->setText(QString::fromStdString(iso_convo[0].first));
+    }
+
+    else if(convo_name.empty() && iso_convo.size() == 2)
+    {
+        std::string convo_text = iso_convo[1].first + " and " + iso_convo[2].first;
+        conversationName->setText(QString::fromStdString(convo_text));
+    }
+    else if (convo_name.empty() && iso_convo.size() > 2)
+    {
+        std::string convo_text = iso_convo[1].first + ", " + iso_convo[2].first + ", others...";
+        conversationName->setText(QString::fromStdString(convo_text));
+    }
+    else if (!convo_name.empty())
+    {
+        conversationName->setText(QString::fromStdString(convo_name));
+    }
+    conversationName->setStyleSheet("QLabel { color: #333333; font-size: 14px; }");
+
+    QPushButton *switch_to_chat_button = new QPushButton("Switch to chat");
+
+    switch_to_chat_button->setStyleSheet(
+        "QPushButton { "
+        "color: white; "
+        "background-color: #4CAF50; "
+        "border-radius: 6px; "
+        "padding: 6px 12px; }"
+        "QPushButton:hover { background-color: #45a049; }"
+        );
+
+    frameLayout->addWidget(conversationName);
+    frameLayout->addWidget(switch_to_chat_button);
+
+    std::vector<int> users_in_chat;
+    for(int i = 1; i < iso_convo.size(); i++)
+    {
+        users_in_chat.push_back(iso_convo[i].second);
+    }
+    connect(switch_to_chat_button, &QPushButton::clicked, this, [this, users_in_chat]() {
+        handle_switch_to_chat_button(users_in_chat);
+    });
+
+    QList<int> qList;
+    for (int value : users_in_chat) {
+        qList.append(value);
+    }
+
+    QVariant variant = QVariant::fromValue(qList);
+
+    // Retrieve the QList<int> back from the QVariant
+    //QList<int> retrievedList = variant.value<QList<int>>();
+
+    frame->setProperty("embed_user_vector", variant);
+
+    return frame;
+}
 
 void MainWindow::handle_accept_friend_request_button(){
     //pass
@@ -633,30 +714,45 @@ void MainWindow::setup_outbound_friend_requests()
 void MainWindow::set_conversations_main_page()
 {
 
-    std::vector<std::pair<std::string, int>> friends_list = relationsManager->get_friends_list_mem();
+    std::vector<std::vector<std::pair<std::string, int>>> conversations = relationsManager->get_conversations_mem();
 
     QWidget* scrollWidget = new QWidget;
     QVBoxLayout* scrollLayout = new QVBoxLayout(scrollWidget);
 
-    if(friends_list.empty())
+    if(conversations.empty())
     {
         ui->scrollAreaMainPageFriends->setWidget(scrollWidget);
         return;
     }
 
-    for (const auto &data : friends_list)
-    {
-        std::cout << "Friend list Username: " << data.first << ", ID: " << data.second << std::endl;
-        QString labelText = QString::fromStdString(data.first);
-        scrollLayout->addWidget(createFriendWidget(labelText, data.second));
+    int count;
+    for (size_t i = 0; i < conversations.size(); ++i) {
+        std::cout << "Conversation " << i + 1 << ":\n";
+        count = 0;
+        //the entire below vector will be passed into the create widget function
+        for (const auto& participant : conversations[i]) {
+            if(count == 0)
+            {
+                std::cout << "  Conversation Name: " << participant.first << ", Conversation ID: " << participant.second << '\n';
+                // this gets added to conversation name part of widget
+            }
+            else
+            {
+                std::cout << "  Username: " << participant.first << ", ID: " << participant.second << '\n';
+                //gets added as convo name if there isn't a given name.
+            }
+            count += 1;
+            //implement
+            //QString labelText = QString::fromStdString(data.first);
+            //scrollLayout->addWidget(createFriendWidget(labelText, data.second));
+        }
     }
     //scrollAreaMainPageFriends
-
     scrollWidget->setLayout(scrollLayout);
     ui->scrollAreaMainPageFriends->setWidget(scrollWidget);
 }
 
-void MainWindow::handle_switch_to_chat_button(const int &user_id_chat)
+void MainWindow::handle_switch_to_chat_button(const std::vector<int> &users_in_chat)
 {
     //refactor this to pull only from memory instead of reemote server. All logs will be pulled once from server in seperate function
     std::cout << "switched to chat" << std::endl;
@@ -667,11 +763,11 @@ void MainWindow::handle_switch_to_chat_button(const int &user_id_chat)
     ui->uploadButton->show();
     /*
     std::vector<int> members_in_chat;
-    members_in_chat.push_back(user_id_chat);
+    members_in_chat.push_back(users_in_chat);
     */
 
     //this pulls any message that has either client_id as sender or receiver, with the relevant chat member as the other side
-    std::vector<std::vector<std::string>> chat_logs = messageManager->get_messages_from_memory(user_id_chat);
+    std::vector<std::vector<std::string>> chat_logs = messageManager->get_messages_from_memory(users_in_chat);
     std::cout << "starting layout setup" << std::endl;
 
     if(chat_logs.empty())
@@ -704,7 +800,15 @@ void MainWindow::handle_switch_to_chat_button(const int &user_id_chat)
     currentChatTextBrowser->setStyleSheet("QTextBrowser{ color: #000000; }");
 
     //embed the user_id of the other user in the chat to the send message button for later use
-    ui->Send_Message_Button->setProperty("userID", user_id_chat);
+
+    QList<int> qList;
+    for (int value : users_in_chat) {
+        qList.append(value);
+    }
+
+    QVariant variant = QVariant::fromValue(qList);
+
+    ui->Send_Message_Button->setProperty("embed_user_vector", variant);
 
     for(auto row : chat_logs)
     {

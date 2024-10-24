@@ -34,7 +34,7 @@ public:
     std::vector<std::vector<std::pair<std::string, int>>> pull_user_conversations();
     int update_conversations_glob();
     void set_conversations_mem(std::vector<std::vector<std::pair<std::string, int>>> conversations);
-    std::vector<std::vector<std::pair<std::string, int>>> get_conversations_mem;
+    std::vector<std::vector<std::pair<std::string, int>>> get_conversations_mem();
 
 private:
     int relation_manager_socket;

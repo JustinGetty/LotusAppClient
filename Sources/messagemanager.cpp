@@ -12,7 +12,7 @@ std::string extract_between(const std::string& data, const std::string& start_de
 
     return data.substr(start, end - start);
 }
-
+//pick up here---
 std::vector<std::vector<std::string>> pull_all_chat_messages(int client_socket)
 {
 
@@ -316,7 +316,7 @@ std::vector<std::vector<std::string>> messagemanager::pull_init_chat_messages(in
     return empty_chat_log;
 }
 
-std::vector<std::vector<std::string>> messagemanager::get_messages_from_memory(const int &non_client_user_id)
+std::vector<std::vector<std::string>> messagemanager::get_messages_from_memory(const std::vector<int> &user_list)
 {
     std::vector<std::vector<std::string>> chat_specific_logs;
 
@@ -324,11 +324,12 @@ std::vector<std::vector<std::string>> messagemanager::get_messages_from_memory(c
     {
         const std::vector<std::string>& message_data = row.second;  // row.second is the vector of strings (the message data)
 
-        if (std::stoi(message_data[2]) == non_client_user_id || std::stoi(message_data[3]) == non_client_user_id)
-        {
+        //reconfig this to only get th chats with those in the user_list
+        //if (std::stoi(message_data[2]) == non_client_user_id || std::stoi(message_data[3]) == non_client_user_id)
+        /*{
             std::vector<std::string> temp_vct = {message_data[0], message_data[1], message_data[4]};
             chat_specific_logs.push_back(temp_vct);
-        }
+        }*/
     }
 
     return chat_specific_logs;
