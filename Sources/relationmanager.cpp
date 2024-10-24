@@ -549,7 +549,14 @@ std::vector<std::vector<std::pair<std::string, int>>> relationmanager::pull_user
             }
         }
     }
+    std::vector<int> id_list;
 
+    for(auto &r : conversation_list)
+    {
+        id_list.push_back(r[0].second);
+    }
+
+    conversation_id_list = id_list;
     return conversation_list;
 }
 
@@ -579,6 +586,11 @@ std::vector<std::vector<std::pair<std::string, int>>> relationmanager::get_conve
     //add error handling
     return conversations_mem_load;
 
+}
+
+std::vector<int> relationmanager::get_conversation_id_list()
+{
+    return conversation_id_list;
 }
 
 

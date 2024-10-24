@@ -66,7 +66,7 @@ private slots:
     void handle_decline_friend_request_button();
     void on_refresh_friend_requests_btn_clicked();
     void on_to_main_from_friends_btn_clicked();
-    void handle_switch_to_chat_button(const std::vector<int> &users_in_chat);
+    void handle_switch_to_chat_button(const int &convo_id);
     void handle_refresh_conversations_button();
     void handle_new_conversation_button();
     void handle_check_box_state_change(int state, int user_id);

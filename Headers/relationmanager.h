@@ -35,6 +35,8 @@ public:
     int update_conversations_glob();
     void set_conversations_mem(std::vector<std::vector<std::pair<std::string, int>>> conversations);
     std::vector<std::vector<std::pair<std::string, int>>> get_conversations_mem();
+    std::vector<int> get_conversation_id_list();
+    void update_conversation_id_list();
 
 private:
     int relation_manager_socket;
@@ -42,6 +44,7 @@ private:
     std::vector<std::pair<std::string, int>> friends_list_in_memory;
     std::vector<int> temp_conversation_list;
     std::vector<std::vector<std::pair<std::string, int>>> conversations_mem_load;
+    std::vector<int> conversation_id_list;
 };
 
 #endif // RELATIONMANAGER_H

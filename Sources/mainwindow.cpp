@@ -13,6 +13,7 @@
     7. The last action to happen when client logs in is they should be shown as online on server side
     8. Have thread that can check if user is online, if so, display symbol
     9. Longterm, switch to json and api's lmao
+    10. Convert the absurd 2d vector pair types to structs
 
     left off:
 */
@@ -94,12 +95,14 @@ void MainWindow::on_uploadButton_clicked()
 
 void MainWindow::handleSendMessageButtonClicked()
 {
-    QVariant embed_id = ui->Send_Message_Button->property("userID");
-    QString other_user_id = embed_id.toString();
-    std::string user_id_std_string = other_user_id.toStdString();
-    std::cout << "embed id: " << user_id_std_string << std::endl;
 
-    if(user_id_std_string.empty())
+    //make this the conversation id
+    QVariant embed_id = ui->Send_Message_Button->property("embed_convo_id");
+    QString convo_id_qstr = embed_id.toString();
+    std::string convo_id_str = convo_id_qstr.toStdString();
+    std::cout << "embed convo id: " <<  convo_id_str << std::endl;
+
+    if(convo_id_str.empty())
     {
         return;
     }
@@ -124,7 +127,7 @@ void MainWindow::handleSendMessageButtonClicked()
     std::string header = "incoming_message\n";
     ssize_t bytes_sent = send(messageManager->get_message_manager_socket(), header.c_str(), header.size(), 0);
 
-    std::string test_message = active_user->get_active_user_username() + "\\-" + user_id_std_string + "\\+" + messi + "\\|";
+    std::string test_message = active_user->get_active_user_username() + "\\-" + convo_id_str + "\\+" + messi + "\\|";
     std::cout << test_message << std::endl;
 
     int bytes_sent_sec = send(messageManager->get_message_manager_socket(), test_message.c_str(), test_message.size(), 0);
@@ -277,6 +280,7 @@ void MainWindow::set_mainview_objects_tot()
 {
     QString username_text = "User signed in: " + QString::fromStdString(active_user->get_active_user_username());
     ui->active_user_label->setText(username_text);
+    relationsManager->update_conversations_glob();
     set_conversations_main_page();
 
 
@@ -603,21 +607,23 @@ QWidget* MainWindow::createMainConversationWidget(std::vector<std::pair<std::str
     {
         users_in_chat.push_back(iso_convo[i].second);
     }
-    connect(switch_to_chat_button, &QPushButton::clicked, this, [this, users_in_chat]() {
-        handle_switch_to_chat_button(users_in_chat);
+    connect(switch_to_chat_button, &QPushButton::clicked, this, [this, convo_id]() {
+        handle_switch_to_chat_button(convo_id);
     });
 
+    /*
     QList<int> qList;
     for (int value : users_in_chat) {
         qList.append(value);
     }
+    */
 
-    QVariant variant = QVariant::fromValue(qList);
+    //QVariant variant = QVariant::fromValue(qList);
 
     // Retrieve the QList<int> back from the QVariant
     //QList<int> retrievedList = variant.value<QList<int>>();
 
-    frame->setProperty("embed_user_vector", variant);
+    frame->setProperty("embed_convo_id", convo_id);
 
     return frame;
 }
@@ -725,34 +731,17 @@ void MainWindow::set_conversations_main_page()
         return;
     }
 
-    int count;
-    for (size_t i = 0; i < conversations.size(); ++i) {
-        std::cout << "Conversation " << i + 1 << ":\n";
-        count = 0;
-        //the entire below vector will be passed into the create widget function
-        for (const auto& participant : conversations[i]) {
-            if(count == 0)
-            {
-                std::cout << "  Conversation Name: " << participant.first << ", Conversation ID: " << participant.second << '\n';
-                // this gets added to conversation name part of widget
-            }
-            else
-            {
-                std::cout << "  Username: " << participant.first << ", ID: " << participant.second << '\n';
-                //gets added as convo name if there isn't a given name.
-            }
-            count += 1;
-            //implement
-            //QString labelText = QString::fromStdString(data.first);
-            //scrollLayout->addWidget(createFriendWidget(labelText, data.second));
-        }
+    for(auto &conversation : conversations)
+    {
+
+        scrollLayout->addWidget(createMainConversationWidget(conversation));
     }
-    //scrollAreaMainPageFriends
+
     scrollWidget->setLayout(scrollLayout);
     ui->scrollAreaMainPageFriends->setWidget(scrollWidget);
 }
 
-void MainWindow::handle_switch_to_chat_button(const std::vector<int> &users_in_chat)
+void MainWindow::handle_switch_to_chat_button(const int &convo_id)
 {
     //refactor this to pull only from memory instead of reemote server. All logs will be pulled once from server in seperate function
     std::cout << "switched to chat" << std::endl;
@@ -767,7 +756,7 @@ void MainWindow::handle_switch_to_chat_button(const std::vector<int> &users_in_c
     */
 
     //this pulls any message that has either client_id as sender or receiver, with the relevant chat member as the other side
-    std::vector<std::vector<std::string>> chat_logs = messageManager->get_messages_from_memory(users_in_chat);
+    std::vector<std::vector<std::string>> chat_logs = messageManager->get_messages_from_memory(convo_id);
     std::cout << "starting layout setup" << std::endl;
 
     if(chat_logs.empty())
@@ -801,17 +790,12 @@ void MainWindow::handle_switch_to_chat_button(const std::vector<int> &users_in_c
 
     //embed the user_id of the other user in the chat to the send message button for later use
 
-    QList<int> qList;
-    for (int value : users_in_chat) {
-        qList.append(value);
-    }
 
-    QVariant variant = QVariant::fromValue(qList);
-
-    ui->Send_Message_Button->setProperty("embed_user_vector", variant);
+    ui->Send_Message_Button->setProperty("embed_convo_id", convo_id);
 
     for(auto row : chat_logs)
     {
+        std::cout << "Chat Logs ROw: "<< row[2] << std::endl;
         std::string sender;
         if(row[1] == active_user->get_active_user_username())
         {
@@ -820,6 +804,7 @@ void MainWindow::handle_switch_to_chat_button(const std::vector<int> &users_in_c
         else{sender = row[1];}
 
         std::string data = "[" + sender + "] " + row[2];
+
         currentChatTextBrowser->append(QString::fromStdString(data));
     }
 
