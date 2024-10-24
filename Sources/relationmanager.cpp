@@ -504,18 +504,26 @@ std::vector<std::vector<std::pair<std::string, int>>> relationmanager::pull_user
 
                 if (mess == "--")
                 {
-                    flag = true; // Signal to stop receiving conversations
+                    // Signal to stop receiving conversations
+                    flag = true;
+                    // Save any remaining conversation data
+                    if (!trunc_convo_vectr.empty())
+                    {
+                        conversation_list.push_back(trunc_convo_vectr);
+                        trunc_convo_vectr.clear();
+                    }
                     break;
                 }
 
                 if (mess == "-")
                 {
-                    // End of the current conversation, add it to the list
+                    // End of the current conversation
                     if (!trunc_convo_vectr.empty())
                     {
                         conversation_list.push_back(trunc_convo_vectr);
+                        trunc_convo_vectr.clear(); // Clear for the next conversation
                     }
-                    break; // Exit the inner while loop to process the next conversation
+                    continue; // Skip further processing for this message
                 }
 
                 if (!mess.empty())
@@ -535,16 +543,8 @@ std::vector<std::vector<std::pair<std::string, int>>> relationmanager::pull_user
                 }
             }
 
-            // If we received the "-" termination signal, break out of the outer loop
-            if (inbound_data == "-")
+            if (flag)
             {
-                break;
-            }
-
-            // If we received the "--" termination signal, break out of both loops
-            if (inbound_data == "--")
-            {
-                flag = true;
                 break;
             }
         }
@@ -552,8 +552,6 @@ std::vector<std::vector<std::pair<std::string, int>>> relationmanager::pull_user
 
     return conversation_list;
 }
-
-
 
 int relationmanager::update_conversations_glob()
 {
@@ -570,7 +568,18 @@ int relationmanager::update_conversations_glob()
     }
 }
 
+void relationmanager::set_conversations_mem(std::vector<std::vector<std::pair<std::string, int>>> conversations)
+{
+    //Probably don't need this
 
+}
+
+std::vector<std::vector<std::pair<std::string, int>>> relationmanager::get_conversations_mem()
+{
+    //add error handling
+    return conversations_mem_load;
+
+}
 
 
 

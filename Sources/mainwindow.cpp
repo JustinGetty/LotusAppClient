@@ -735,8 +735,8 @@ void MainWindow::addMessageToTextBrowser(const QString &message) {
 void MainWindow::handle_refresh_conversations_button()
 {
     std::cout << "Refreshing conversations..." << std::endl;
-    //set_conversations_main_page();
     relationsManager->update_conversations_glob();
+    set_conversations_main_page();
 }
 
 QWidget* MainWindow::createWidgetWithCheckBox(const QString &labelText, const int &user_id)
