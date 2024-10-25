@@ -144,7 +144,90 @@ int logicmanager::fetch_user_id_from_server(const std::string &username)
     int id = std::stoi(received_data.substr(0, received_data.find("|")));
     return id;
 }
-int send_profile_picture_change(const QByteArray &imgByteArray)
+int logicmanager::send_profile_picture_change(const QByteArray &imgByteArray)
 {
+    std::string header = "upload_pfp\n";
+    if (send(logic_manager_socket, header.c_str(), header.size(), 0) < 0)
+    {
+        std::cerr << "Failed to send the header." << std::endl;
+        return -1;
+    }
 
+    uint64_t image_size = imgByteArray.size();
+    if (send(logic_manager_socket, &image_size, sizeof(image_size), 0) < 0)
+    {
+        std::cerr << "Failed to send image size." << std::endl;
+        return -1;
+    }
+
+    if (send(logic_manager_socket, imgByteArray.data(), imgByteArray.size(), 0) < 0)
+    {
+        std::cerr << "Failed to send image data." << std::endl;
+        return -1;
+    }
+
+    std::cout << "Profile picture sent successfully" << std::endl;
+    return 0;
 }
+
+QPixmap logicmanager::pull_profile_picture()
+{
+    QPixmap profile_picture;
+
+    // Send the request header
+    std::string header = "get_profile_pic\n";
+    if (send(logic_manager_socket, header.c_str(), header.size(), 0) < 0)
+    {
+        std::cerr << "Failed to send the header." << std::endl;
+        return profile_picture;
+    }
+
+    // Receive the image size
+    uint64_t image_size;
+    if (recv(logic_manager_socket, &image_size, sizeof(image_size), 0) <= 0)
+    {
+        std::cerr << "Failed to receive image size." << std::endl;
+        return profile_picture;
+    }
+    std::cerr << "Successfully received image size: " << image_size << std::endl;
+
+    // Allocate a buffer for the image data
+    std::vector<char> buffer(image_size);
+    size_t total_bytes_rec = 0;
+    while (total_bytes_rec < image_size)
+    {
+        ssize_t bytes_received = recv(logic_manager_socket, buffer.data() + total_bytes_rec, image_size - total_bytes_rec, 0);
+        if (bytes_received <= 0)
+        {
+            std::cerr << "Failed to receive image data." << std::endl;
+            return profile_picture; // Return empty QPixmap on failure
+        }
+        total_bytes_rec += bytes_received;
+    }
+
+    // Check if all the data was received
+    if (image_size == total_bytes_rec)
+    {
+        std::cout << "Image data received successfully." << std::endl;
+
+        // Load the image data into a QPixmap
+        if (!profile_picture.loadFromData(reinterpret_cast<const unsigned char*>(buffer.data()), buffer.size()))
+        {
+            std::cerr << "Failed to load image data into QPixmap." << std::endl;
+        }
+    }
+    else
+    {
+        std::cerr << "Mismatch between expected and received image size." << std::endl;
+    }
+
+    return profile_picture;
+}
+
+
+
+
+
+
+
+

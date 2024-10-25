@@ -228,6 +228,7 @@ void MainWindow::on_login_account_button_clicked()
             }
             std::cout << "USER ID AT LOGIN: " << active_user->get_user_id();
             int set_user_status = active_user->set_active_user_username(username);
+            int set_pfp_status = active_user->set_profile_pic_glob(logicManager->pull_profile_picture());
 
             std::cout << "Set user status: " << set_user_status << std::endl;
 //------CREATE THE MESSAGE AND RELATION THREADS HERE---------------
@@ -282,6 +283,8 @@ void MainWindow::set_mainview_objects_tot()
     ui->active_user_label->setText(username_text);
     relationsManager->update_conversations_glob();
     set_conversations_main_page();
+    QPixmap pixmap = active_user->get_profile_pic_pmap();
+    ui->profile_pic_main_label->setPixmap(pixmap.scaled(ui->profile_pic_main_label->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
 
 }
@@ -1003,12 +1006,34 @@ void MainWindow::handle_change_profile_pic_button()
     }
     QPixmap pixmap = QPixmap::fromImage(image);
     ui->profile_pic_label->setPixmap(pixmap.scaled(ui->profile_pic_label->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    connect()
 }
 
-void handle_confirm_pfp_change_btn(const QByteArray &img_byte_array)
+void MainWindow::handle_confirm_pfp_change_btn()
 {
+    QPixmap pixmap = ui->profile_pic_label->pixmap(Qt::ReturnByValue);
+    if (pixmap.isNull()) {
+        QMessageBox::warning(this, tr("Confirm Profile Picture"), tr("No image selected."));
+        return;
+    }
 
+    QByteArray img_byte_array;
+    QBuffer buffer(&img_byte_array);
+    buffer.open(QIODevice::WriteOnly);
+    pixmap.save(&buffer, "PNG");
+
+    int status = logicManager->send_profile_picture_change(img_byte_array);
+
+    if (status == 0)
+    {
+        //display to screen eventually
+        active_user->set_profile_pic_glob(pixmap);
+        ui->profile_pic_main_label->setPixmap(pixmap.scaled(ui->profile_pic_main_label->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        std::cout << "good profile pic change, continue" << std::endl;
+    }
+    else
+    {
+        std::cout << "Bad profile pic change, Server Error" << std::endl;
+    }
 }
 
 void MainWindow::to_settings_from_main_button()
@@ -1082,6 +1107,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->change_pfp_button, &QPushButton::clicked, this, &MainWindow::handle_change_profile_pic_button);
     connect(ui->to_main_from_settings_btn, &QPushButton::clicked, this, &MainWindow::to_main_from_settings_button);
     connect(ui->to_settings_from_main_btn, &QPushButton::clicked, this, &MainWindow::to_settings_from_main_button);
+    connect(ui->confirm_profile_pic_btn, &QPushButton::clicked, this, &MainWindow::handle_confirm_pfp_change_btn);
     bool isConnected = connect(ui->refresh_friend_requests_btn, &QPushButton::clicked, this, &MainWindow::on_refresh_friend_requests_btn_clicked);
     if (!isConnected) {
         qDebug() << "Connection to refresh_friend_requests_btn failed!";

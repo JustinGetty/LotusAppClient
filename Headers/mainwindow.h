@@ -75,7 +75,7 @@ private slots:
     void handle_change_profile_pic_button();
     void to_main_from_settings_button();
     void to_settings_from_main_button();
-    void handle_confirm_pfp_change_btn(const QByteArray &img_byte_array);
+    void handle_confirm_pfp_change_btn();
 
 private:
     Ui::MainWindow *ui;

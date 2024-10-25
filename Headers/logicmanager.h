@@ -4,6 +4,11 @@
 #include <iostream>
 #include <string>
 #include <sys/socket.h>
+#include <QImage>
+#include <QPixmap>
+#include <vector>
+#include <cstdint>
+
 class logicmanager
 {
 public:
@@ -15,6 +20,7 @@ public:
     void verify_new_account(int conn_socket, const std::string &user_pw);
     int fetch_user_id_from_server(const std::string &username);
     int send_profile_picture_change(const QByteArray &imgByteArray);
+    QPixmap pull_profile_picture();
 
 private:
     int logic_manager_socket;

@@ -717,13 +717,13 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <property name="frameShadow">
         <enum>QFrame::Shadow::Raised</enum>
        </property>
-       <widget class="QLabel" name="label_7">
+       <widget class="QLabel" name="profile_pic_main_label">
         <property name="geometry">
          <rect>
           <x>17</x>
-          <y>20</y>
+          <y>11</y>
           <width>58</width>
-          <height>16</height>
+          <height>25</height>
          </rect>
         </property>
         <property name="text">
