@@ -44,8 +44,111 @@ QPushButton:pressed {
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
+    <widget class="QWidget" name="settings_window">
+     <property name="styleSheet">
+      <string notr="true">QWidget{
+background-color: #ffffff;
+}</string>
+     </property>
+     <widget class="QWidget" name="widget_5" native="true">
+      <property name="geometry">
+       <rect>
+        <x>55</x>
+        <y>4</y>
+        <width>1285</width>
+        <height>775</height>
+       </rect>
+      </property>
+      <widget class="QPushButton" name="change_pfp_button">
+       <property name="geometry">
+        <rect>
+         <x>473</x>
+         <y>258</y>
+         <width>155</width>
+         <height>32</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton{
+color: #000000;
+}</string>
+       </property>
+       <property name="text">
+        <string>Change Profile Picture</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="profile_pic_label">
+       <property name="geometry">
+        <rect>
+         <x>484</x>
+         <y>326</y>
+         <width>126</width>
+         <height>122</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="confirm_profile_pic_btn">
+       <property name="geometry">
+        <rect>
+         <x>549</x>
+         <y>323</y>
+         <width>75</width>
+         <height>32</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton{
+	color: #000000;
+}</string>
+       </property>
+       <property name="text">
+        <string>Confirm?</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="cancel_profile_pic_change">
+       <property name="geometry">
+        <rect>
+         <x>427</x>
+         <y>323</y>
+         <width>73</width>
+         <height>32</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton{
+	color: #000000;
+}</string>
+       </property>
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="to_main_from_settings_btn">
+       <property name="geometry">
+        <rect>
+         <x>36</x>
+         <y>26</y>
+         <width>100</width>
+         <height>32</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton
+{
+	color: #000000;
+}</string>
+       </property>
+       <property name="text">
+        <string>BACK</string>
+       </property>
+      </widget>
+     </widget>
+    </widget>
     <widget class="QWidget" name="main_window">
      <property name="minimumSize">
       <size>
@@ -604,7 +707,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
         <rect>
          <x>9</x>
          <y>715</y>
-         <width>259</width>
+         <width>296</width>
          <height>53</height>
         </rect>
        </property>
@@ -630,8 +733,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <widget class="QLabel" name="active_user_label">
         <property name="geometry">
          <rect>
-          <x>69</x>
-          <y>10</y>
+          <x>57</x>
+          <y>13</y>
           <width>165</width>
           <height>31</height>
          </rect>
@@ -643,6 +746,24 @@ li.checked::marker { content: &quot;\2612&quot;; }
         </property>
         <property name="text">
          <string/>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="to_settings_from_main_btn">
+        <property name="geometry">
+         <rect>
+          <x>246</x>
+          <y>11</y>
+          <width>43</width>
+          <height>33</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton{
+	color: #000000;
+}</string>
+        </property>
+        <property name="text">
+         <string>Settings</string>
         </property>
        </widget>
       </widget>

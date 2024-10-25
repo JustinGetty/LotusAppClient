@@ -144,3 +144,7 @@ int logicmanager::fetch_user_id_from_server(const std::string &username)
     int id = std::stoi(received_data.substr(0, received_data.find("|")));
     return id;
 }
+int send_profile_picture_change(const QByteArray &imgByteArray)
+{
+
+}

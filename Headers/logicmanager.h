@@ -14,6 +14,7 @@ public:
     std::string get_status(int client_socket);
     void verify_new_account(int conn_socket, const std::string &user_pw);
     int fetch_user_id_from_server(const std::string &username);
+    int send_profile_picture_change(const QByteArray &imgByteArray);
 
 private:
     int logic_manager_socket;

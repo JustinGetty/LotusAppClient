@@ -567,30 +567,44 @@ QWidget* MainWindow::createMainConversationWidget(std::vector<std::pair<std::str
     iso_convo.erase(iso_convo.begin());
 
     QLabel *conversationName = new QLabel();
-    if(iso_convo.size() == 1)
+    if(iso_convo.size() == 2)
     {
-        conversationName->setText(QString::fromStdString(iso_convo[0].first));
-    }
-
-    else if(convo_name.empty() && iso_convo.size() == 2)
-    {
-        std::string convo_text = iso_convo[1].first + " and " + iso_convo[2].first;
+        std::cout << "Condition 1" << std::endl;
+        std::string convo_text = iso_convo[0].first;
         conversationName->setText(QString::fromStdString(convo_text));
     }
-    else if (convo_name.empty() && iso_convo.size() > 2)
+
+    else if(convo_name.empty() && iso_convo.size() == 3)
     {
+        std::cout << "Condition 2" << std::endl;
+        std::string convo_text = iso_convo[0].first + " and " + iso_convo[1].first;
+        conversationName->setText(QString::fromStdString(convo_text));
+    }
+    else if (convo_name.empty() && iso_convo.size() > 3)
+    {
+        std::cout << "Condition 3" << std::endl;
         std::string convo_text = iso_convo[1].first + ", " + iso_convo[2].first + ", others...";
         conversationName->setText(QString::fromStdString(convo_text));
     }
     else if (!convo_name.empty())
     {
+        std::cout << "Condition 4" << std::endl;
         conversationName->setText(QString::fromStdString(convo_name));
     }
     conversationName->setStyleSheet("QLabel { color: #333333; font-size: 14px; }");
 
     QPushButton *switch_to_chat_button = new QPushButton("Switch to chat");
+    QPushButton *change_conversation_name = new QPushButton("Rename Chat");
 
     switch_to_chat_button->setStyleSheet(
+        "QPushButton { "
+        "color: white; "
+        "background-color: #4CAF50; "
+        "border-radius: 6px; "
+        "padding: 6px 12px; }"
+        "QPushButton:hover { background-color: #45a049; }"
+        );
+    change_conversation_name->setStyleSheet(
         "QPushButton { "
         "color: white; "
         "background-color: #4CAF50; "
@@ -601,6 +615,7 @@ QWidget* MainWindow::createMainConversationWidget(std::vector<std::pair<std::str
 
     frameLayout->addWidget(conversationName);
     frameLayout->addWidget(switch_to_chat_button);
+    frameLayout->addWidget(change_conversation_name);
 
     std::vector<int> users_in_chat;
     for(int i = 1; i < iso_convo.size(); i++)
@@ -739,6 +754,38 @@ void MainWindow::set_conversations_main_page()
 
     scrollWidget->setLayout(scrollLayout);
     ui->scrollAreaMainPageFriends->setWidget(scrollWidget);
+    ui->scrollAreaMainPageFriends->setStyleSheet(
+        "QScrollBar:vertical {"
+        "    background: #f0f0f0;"         // Background color of the scrollbar
+        "    width: 12px;"                 // Width of the vertical scrollbar
+        "    margin: 0px 0px 0px 0px;"     // Margins
+        "    border: 1px solid #dcdcdc;"   // Border around the scrollbar
+        "}"
+        "QScrollBar::handle:vertical {"
+        "    background: #b0b0b0;"         // Color of the handle
+        "    min-height: 20px;"            // Minimum height of the handle
+        "    border-radius: 4px;"          // Rounded corners
+        "}"
+        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
+        "    height: 0px;"                 // Removes the up and down arrow buttons
+        "    subcontrol-origin: margin;"
+        "}"
+        "QScrollBar:horizontal {"
+        "    background: #f0f0f0;"         // Background color of the horizontal scrollbar
+        "    height: 12px;"                // Height of the horizontal scrollbar
+        "    margin: 0px 0px 0px 0px;"     // Margins
+        "    border: 1px solid #dcdcdc;"   // Border around the scrollbar
+        "}"
+        "QScrollBar::handle:horizontal {"
+        "    background: #b0b0b0;"         // Color of the handle
+        "    min-width: 20px;"             // Minimum width of the handle
+        "    border-radius: 4px;"          // Rounded corners
+        "}"
+        "QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {"
+        "    width: 0px;"                  // Removes the left and right arrow buttons
+        "    subcontrol-origin: margin;"
+        "}"
+        );
 }
 
 void MainWindow::handle_switch_to_chat_button(const int &convo_id)
@@ -935,6 +982,47 @@ void MainWindow::handle_cancel_new_convo_button()
     ui->new_conversation_frame->hide();
 }
 
+void MainWindow::handle_change_profile_pic_button()
+{
+    QString filePath = QFileDialog::getOpenFileName(
+        this,
+        tr("Open Image"),
+        "",
+        tr("Image Files (*.png *.jpg *.bmp)")
+    );
+    if (filePath.isEmpty())
+    {
+        return;
+    }
+
+    QImage image;
+    if (!image.load(filePath))
+    {
+        QMessageBox::warning(this, tr("Open Image"), tr("The image could not be loaded"));
+        return;
+    }
+    QPixmap pixmap = QPixmap::fromImage(image);
+    ui->profile_pic_label->setPixmap(pixmap.scaled(ui->profile_pic_label->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    connect()
+}
+
+void handle_confirm_pfp_change_btn(const QByteArray &img_byte_array)
+{
+
+}
+
+void MainWindow::to_settings_from_main_button()
+{
+    ui->main_window->hide();
+    ui->settings_window->show();
+}
+
+void MainWindow::to_main_from_settings_button()
+{
+    ui->settings_window->hide();
+    ui->main_window->show();
+}
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -951,6 +1039,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->Message_Input_Label->hide();
     ui->uploadButton->hide();
     ui->new_conversation_frame->hide();
+    ui->settings_window->hide();
 
     ui->friends_window->hide();
     ui->main_window->hide();
@@ -990,6 +1079,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->NewConversationButton, &QPushButton::clicked, this, &MainWindow::handle_new_conversation_button);
     connect(ui->ConfirmNewConversationButton, &QPushButton::clicked, this, &MainWindow::handle_confirm_new_convo_button);
     connect(ui->CancelNewConversationButton, &QPushButton::clicked, this, &MainWindow::handle_cancel_new_convo_button);
+    connect(ui->change_pfp_button, &QPushButton::clicked, this, &MainWindow::handle_change_profile_pic_button);
+    connect(ui->to_main_from_settings_btn, &QPushButton::clicked, this, &MainWindow::to_main_from_settings_button);
+    connect(ui->to_settings_from_main_btn, &QPushButton::clicked, this, &MainWindow::to_settings_from_main_button);
     bool isConnected = connect(ui->refresh_friend_requests_btn, &QPushButton::clicked, this, &MainWindow::on_refresh_friend_requests_btn_clicked);
     if (!isConnected) {
         qDebug() << "Connection to refresh_friend_requests_btn failed!";

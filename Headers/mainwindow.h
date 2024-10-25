@@ -72,6 +72,10 @@ private slots:
     void handle_check_box_state_change(int state, int user_id);
     void handle_confirm_new_convo_button();
     void handle_cancel_new_convo_button();
+    void handle_change_profile_pic_button();
+    void to_main_from_settings_button();
+    void to_settings_from_main_button();
+    void handle_confirm_pfp_change_btn(const QByteArray &img_byte_array);
 
 private:
     Ui::MainWindow *ui;
