@@ -203,6 +203,7 @@ QPixmap logicmanager::pull_profile_picture()
             return profile_picture; // Return empty QPixmap on failure
         }
         total_bytes_rec += bytes_received;
+        std::cout << "Total Bytes Received: " << total_bytes_rec << std::endl;
     }
 
     // Check if all the data was received

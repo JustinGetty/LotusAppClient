@@ -47,4 +47,5 @@ QPixmap user::get_profile_pic_pmap()
 int user::set_profile_pic_glob(QPixmap pixmap)
 {
     profile_pic_glob_pixmap = pixmap;
+    return 0;
 }

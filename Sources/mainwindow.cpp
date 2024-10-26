@@ -228,7 +228,10 @@ void MainWindow::on_login_account_button_clicked()
             }
             std::cout << "USER ID AT LOGIN: " << active_user->get_user_id();
             int set_user_status = active_user->set_active_user_username(username);
-            int set_pfp_status = active_user->set_profile_pic_glob(logicManager->pull_profile_picture());
+            std::cout << "\nFetching Profile Picture" << std::endl;
+            QPixmap profile_picture = logicManager->pull_profile_picture();
+
+            int set_pfp_status = active_user->set_profile_pic_glob(profile_picture);
 
             std::cout << "Set user status: " << set_user_status << std::endl;
 //------CREATE THE MESSAGE AND RELATION THREADS HERE---------------
