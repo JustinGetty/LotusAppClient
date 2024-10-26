@@ -55,91 +55,136 @@ std::string get_status(int client_socket) {
     return status_message.substr(0, status_message.find('|'));
 }
 
+void MainWindow::set_image_to_send(QByteArray image)
+{
+    image_send_temp = image;
+}
+
+QByteArray MainWindow::get_image_to_send()
+{
+    return image_send_temp;
+}
+
+void MainWindow::set_active_image_display_flag(bool status)
+{
+    active_image_display_flag = status;
+}
+bool MainWindow::get_active_image_display_flag()
+{
+    return active_image_display_flag;
+}
 
 
-void MainWindow::on_uploadButton_clicked()
+void MainWindow::handle_upload_button_clicked()
 {
     //tr alloweds multi language support
     //close this when done somehow
+    std::cout << "Upload Button Clicked" << std::endl;
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open Image"), "", tr("Image Files (*.png *.jpg *.bmp *.gif *.jpeg)"));
 
     if (!fileName.isEmpty())
     {
-        QImage image;
-        if (!image.load(fileName))
-        {
-            QMessageBox::warning(this, tr("Error"), tr("Failed to load image :("));
-            return;
-        }
+        QTimer::singleShot(0, this, [=]() {
+            QImage image;
+            if (!image.load(fileName))
+            {
+                QMessageBox::warning(this, tr("Error"), tr("Failed to load image :("));
+                return;
+            }
 
-        QString imageHTML = QString("<img src=\"%1\" width=\"400\"/>").arg(fileName);
+            QString imageHTML = QString("<img src=\"%1\" width=\"400\"/>").arg(fileName);
 
-        //ui->textBrowser->insertHtml(imageHTML);
+            QByteArray byte_array;
+            QBuffer buffer(&byte_array);
+            buffer.open(QIODevice::WriteOnly);
+            image.save(&buffer, "PNG");  // format is png, change that later to be dynamic
 
-        //RESIZE INPUT LABEL HEREEEEE!!!!!!!!
-        // int height = image.height();
-        //ui->Message_Input_Label->setFixedHeight(height);
-        ui->Message_Input_Label->insertHtml(imageHTML);
+            set_image_to_send(byte_array);
 
-        //time to send that shi
-        QByteArray byte_array;
-        QBuffer buffer(&byte_array);
-        buffer.open(QIODevice::WriteOnly);
-        image.save(&buffer, "PNG");  // format is png, change that later to be dynamic
-//super important here, this needs to go into send_message_button_clicked9)        messageManager->send_message(3, byte_array, "image");
+            QPixmap sendable;
+            sendable.loadFromData(byte_array);
+            display_image_before_send(sendable);
 
-        //QMessageBox::information(this, tr("Success"), tr("Image uploaded and displayed successfully."));
+        });
     }
+}
+
+void MainWindow::display_image_before_send(QPixmap pixmap)
+{
+    std::cout << "Displaying image" << std::endl;
+    set_active_image_display_flag(true);
+
+    //ui->TextBrowserParentWidget->setFixedHeight(500);
+    ui->image_display_label->setPixmap(pixmap.scaled(ui->image_display_label->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    ui->display_image_widget->show();
+
+}
+
+void MainWindow::destruct_image_display()
+{
+    //delete to save memory here, FIX
+    ui->display_image_widget->hide();
+    ui->TextBrowserParentWidget->setFixedHeight(658);
+}
+
+void MainWindow::handle_delete_image_btn()
+{
+    std::cout << "Delete image button pressed" << std::endl;
+    destruct_image_display();
 }
 
 
 void MainWindow::handleSendMessageButtonClicked()
 {
+    QByteArray image_data;
+    int image_size = 0;
 
-    //make this the conversation id
+    // Check if an image is to be sent
+    if (get_active_image_display_flag() == true) {
+        image_data = get_image_to_send();
+        image_size = image_data.size();
+        destruct_image_display();
+    }
+
+    // Get conversation ID
     QVariant embed_id = ui->Send_Message_Button->property("embed_convo_id");
     QString convo_id_qstr = embed_id.toString();
     std::string convo_id_str = convo_id_qstr.toStdString();
-    std::cout << "embed convo id: " <<  convo_id_str << std::endl;
-
-    if(convo_id_str.empty())
-    {
+    if (convo_id_str.empty()) {
         return;
     }
-    static bool isProcessing = false;  // Static variable to persist between function calls
 
+    static bool isProcessing = false;
     if (isProcessing) {
-        return;  // Prevent re-entry if already processing
+        return;
     }
-
-    isProcessing = true;  // Set the flag
+    isProcessing = true;
 
     ui->Send_Message_Button->setEnabled(false);
-    std::cout << "SEND MESSAGE BUTTON CLICKED" << std::endl;
-    //plain text type sucks REFIG asap
     user_message = ui->Message_Input_Label->toPlainText();
     ui->Message_Input_Label->clear();
-
     std::string messi = user_message.toStdString();
 
-
-    // types are text or image, that's it. Dont mess that up
+    // Build message metadata
     std::string header = "incoming_message\n";
-    ssize_t bytes_sent = send(messageManager->get_message_manager_socket(), header.c_str(), header.size(), 0);
+    send(messageManager->get_message_manager_socket(), header.c_str(), header.size(), 0);
 
-    std::string test_message = active_user->get_active_user_username() + "\\-" + convo_id_str + "\\+" + messi + "\\|";
-    std::cout << test_message << std::endl;
+    std::string message_metadata = active_user->get_active_user_username() + "\\-" + convo_id_str + "\\+" + messi + "\\$" + std::to_string(image_size) + "\\|";
+    send(messageManager->get_message_manager_socket(), message_metadata.c_str(), message_metadata.size(), 0);
 
-    int bytes_sent_sec = send(messageManager->get_message_manager_socket(), test_message.c_str(), test_message.size(), 0);
+    // Send image data if present
+    if (image_size > 0) {
+        send(messageManager->get_message_manager_socket(), image_data.constData(), image_size, 0);
+    }
 
     QString currentTimestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
     QString message_to_append = currentTimestamp + " Me: " + QString::fromStdString(messi);
-
     addMessageToTextBrowser(message_to_append);
 
     ui->Send_Message_Button->setEnabled(true);
-    isProcessing = false;  // Reset the flag when done
+    isProcessing = false;
 }
+
 
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
@@ -1073,6 +1118,17 @@ MainWindow::MainWindow(QWidget *parent)
     ui->main_window->hide();
     ui->create_account->hide();
     ui->login_window->show();
+    ui->display_image_widget->hide();
+
+    /*
+    setWindowFlags(Qt::FramelessWindowHint);
+    connect(ui->closeButton, &QPushButton::clicked, this, &MainWindow::close);
+    connect(ui->minimizeButton, &QPushButton::clicked, this, &MainWindow::showMinimized);
+    connect(ui->maximizeButton, &QPushButton::clicked, this, &MainWindow::showMaximized);
+    // Assuming 'headerWidget' is the name of your custom header widget
+    ui->headerWidget->setStyleSheet("background-color: #3498db; color: white;");
+    */
+
 
     //refactor here. This creates a new thread for sending and recievung messages.
     active_user = new user();
@@ -1095,7 +1151,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     //eventually connect and render these as neede, i.e in the function that loads them
     connect(ui->Send_Message_Button, &QPushButton::clicked, this, &MainWindow::handleSendMessageButtonClicked);
-    connect(ui->uploadButton, &QPushButton::clicked, this, &MainWindow::on_uploadButton_clicked);
+    disconnect(ui->uploadButton, &QPushButton::clicked, this, &MainWindow::handle_upload_button_clicked);
+    connect(ui->uploadButton, &QPushButton::clicked, this, &MainWindow::handle_upload_button_clicked);
     disconnect(ui->create_account_button, &QPushButton::clicked, this, &MainWindow::on_create_account_button_clicked);
     connect(ui->create_account_button, &QPushButton::clicked, this, &MainWindow::on_create_account_button_clicked);
     connect(ui->login_account_button, &QPushButton::clicked, this, &MainWindow::on_login_account_button_clicked);
@@ -1111,6 +1168,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->to_main_from_settings_btn, &QPushButton::clicked, this, &MainWindow::to_main_from_settings_button);
     connect(ui->to_settings_from_main_btn, &QPushButton::clicked, this, &MainWindow::to_settings_from_main_button);
     connect(ui->confirm_profile_pic_btn, &QPushButton::clicked, this, &MainWindow::handle_confirm_pfp_change_btn);
+    connect(ui->delete_image_send, &QPushButton::clicked, this, &MainWindow::handle_delete_image_btn);
+    // Connect buttons to functions to handle close, minimize, and maximize
+
     bool isConnected = connect(ui->refresh_friend_requests_btn, &QPushButton::clicked, this, &MainWindow::on_refresh_friend_requests_btn_clicked);
     if (!isConnected) {
         qDebug() << "Connection to refresh_friend_requests_btn failed!";

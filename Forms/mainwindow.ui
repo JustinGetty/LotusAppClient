@@ -179,8 +179,8 @@ background-color: #ffffff;
       <widget class="QPushButton" name="uploadButton">
        <property name="geometry">
         <rect>
-         <x>584</x>
-         <y>669</y>
+         <x>447</x>
+         <y>714</y>
          <width>65</width>
          <height>41</height>
         </rect>
@@ -197,8 +197,8 @@ background-color: #ffffff;
       <widget class="QPushButton" name="Send_Message_Button">
        <property name="geometry">
         <rect>
-         <x>1136</x>
-         <y>672</y>
+         <x>1076</x>
+         <y>717</y>
          <width>54</width>
          <height>32</height>
         </rect>
@@ -216,9 +216,9 @@ background-color: #ffffff;
       <widget class="QTextEdit" name="Message_Input_Label">
        <property name="geometry">
         <rect>
-         <x>664</x>
-         <y>674</y>
-         <width>460</width>
+         <x>526</x>
+         <y>719</y>
+         <width>524</width>
          <height>29</height>
         </rect>
        </property>
@@ -829,10 +829,10 @@ li.checked::marker { content: &quot;\2612&quot;; }
       <widget class="QWidget" name="TextBrowserParentWidget" native="true">
        <property name="geometry">
         <rect>
-         <x>325</x>
+         <x>336</x>
          <y>9</y>
-         <width>918</width>
-         <height>747</height>
+         <width>907</width>
+         <height>658</height>
         </rect>
        </property>
        <widget class="QLabel" name="EmptyChatLabel">
@@ -857,8 +857,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <widget class="QFrame" name="new_conversation_frame">
         <property name="geometry">
          <rect>
-          <x>258</x>
-          <y>111</y>
+          <x>250</x>
+          <y>43</y>
           <width>357</width>
           <height>471</height>
          </rect>
@@ -928,6 +928,50 @@ li.checked::marker { content: &quot;\2612&quot;; }
           </property>
          </widget>
         </widget>
+       </widget>
+       <widget class="QWidget" name="display_image_widget" native="true">
+        <property name="geometry">
+         <rect>
+          <x>91</x>
+          <y>593</y>
+          <width>728</width>
+          <height>107</height>
+         </rect>
+        </property>
+        <widget class="QLabel" name="image_display_label">
+         <property name="geometry">
+          <rect>
+           <x>34</x>
+           <y>4</y>
+           <width>128</width>
+           <height>100</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="delete_image_send">
+         <property name="geometry">
+          <rect>
+           <x>170</x>
+           <y>-1</y>
+           <width>100</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton
+{
+	color: #000000;
+}</string>
+         </property>
+         <property name="text">
+          <string>Delete</string>
+         </property>
+        </widget>
+        <zorder>delete_image_send</zorder>
+        <zorder>image_display_label</zorder>
        </widget>
       </widget>
       <widget class="QPushButton" name="RefreshConversations">
@@ -1981,6 +2025,16 @@ color: #000000;
       <zorder>create_user_input</zorder>
      </widget>
     </widget>
+   </widget>
+   <widget class="QWidget" name="headerWidget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>1280</width>
+      <height>25</height>
+     </rect>
+    </property>
    </widget>
   </widget>
  </widget>

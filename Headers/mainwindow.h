@@ -50,10 +50,14 @@ public:
     void set_conversations_main_page();
     int get_push_button_embed_id();
     void setup_friends_list();
+    void set_image_to_send(QByteArray image);
+    QByteArray get_image_to_send();
+    void set_active_image_display_flag(bool status);
+    bool get_active_image_display_flag();
 
 private slots:
     void handleSendMessageButtonClicked();
-    void on_uploadButton_clicked();
+    void handle_upload_button_clicked();
     void on_create_account_button_clicked();
     void on_login_account_button_clicked();
     void switch_to_create_account_view();
@@ -76,6 +80,7 @@ private slots:
     void to_main_from_settings_button();
     void to_settings_from_main_button();
     void handle_confirm_pfp_change_btn();
+    void handle_delete_image_btn();
 
 private:
     Ui::MainWindow *ui;
@@ -94,6 +99,10 @@ private:
     QWidget* createWidgetWithCheckBox(const QString &labelText, const int &user_id);
     QWidget* createMainConversationWidget(std::vector<std::pair<std::string, int>> iso_convo);
     QTextBrowser* currentChatTextBrowser;
+    void display_image_before_send(QPixmap pixmap);
+    void destruct_image_display();
+    bool active_image_display_flag = false;
+    QByteArray image_send_temp;
 
 protected:
     //void keyPressEvent(QKeyEvent *event) override;  // Declaration in the header file
