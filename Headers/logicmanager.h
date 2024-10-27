@@ -8,6 +8,8 @@
 #include <QPixmap>
 #include <vector>
 #include <cstdint>
+#include <arpa/inet.h>
+#include <stdint.h>
 
 class logicmanager
 {

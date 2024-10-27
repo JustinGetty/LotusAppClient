@@ -6,6 +6,10 @@
 #include <string>
 #include <sys/socket.h>
 #include <unordered_map>
+#include <filesystem>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fstream>
 
 class MainWindow;
 

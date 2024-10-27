@@ -31,6 +31,11 @@
 #include <QTimer>
 #include <QDateTime>
 #include <QCheckBox>
+#include <filesystem>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fstream>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
