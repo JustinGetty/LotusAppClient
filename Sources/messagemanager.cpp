@@ -14,6 +14,7 @@ std::string extract_between(const std::string& data, const std::string& start_de
 }
 std::vector<ChatMessage> messagemanager::pull_all_chat_messages(int client_socket)
 {
+    is_receiving = false;
     std::cout << "pull_all_chat_messages" << std::endl;
     std::vector<ChatMessage> empty_chat_log;
     std::vector<ChatMessage> chat_log;
@@ -142,6 +143,7 @@ std::vector<ChatMessage> messagemanager::pull_all_chat_messages(int client_socke
         }
     }
     return chat_log;
+    is_receiving = true;
 }
 
 
@@ -187,7 +189,7 @@ void messagemanager::async_receive_messages(const int &message_manager_socket, M
     //if not in chat, show notifcation and add to memory logs
     //thread to recieve
     // Thread to continuously receive messages from the server
-/*
+
     std::string buffer_data;
 
     while (true) {
@@ -271,7 +273,7 @@ void messagemanager::async_receive_messages(const int &message_manager_socket, M
             }
         }
     }
-*/
+
 }
 
 void messagemanager::send_message(int client_socket, const QByteArray &data, const QString &type)
