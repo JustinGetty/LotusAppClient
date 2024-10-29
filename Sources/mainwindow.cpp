@@ -854,7 +854,7 @@ void MainWindow::handle_switch_to_chat_button(const int &convo_id)
     */
 
     //this pulls any message that has either client_id as sender or receiver, with the relevant chat member as the other side
-    std::vector<std::vector<std::string>> chat_logs = messageManager->get_messages_from_memory(convo_id);
+    std::vector<ChatMessage> chat_logs = messageManager->get_messages_from_memory(convo_id);
     std::cout << "starting layout setup" << std::endl;
 
     if(chat_logs.empty())
@@ -891,17 +891,17 @@ void MainWindow::handle_switch_to_chat_button(const int &convo_id)
 
     ui->Send_Message_Button->setProperty("embed_convo_id", convo_id);
 
+
     for(auto row : chat_logs)
     {
-        std::cout << "Chat Logs ROw: "<< row[2] << std::endl;
         std::string sender;
-        if(row[1] == active_user->get_active_user_username())
+        if(row.sender_username == active_user->get_active_user_username())
         {
             sender = "Me";
         }
-        else{sender = row[1];}
+        else{sender = row.sender_username;}
 
-        std::string data = "[" + sender + "] " + row[2];
+        std::string data = "[" + sender + "] " + row.message_content;
 
         currentChatTextBrowser->append(QString::fromStdString(data));
     }
