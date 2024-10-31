@@ -35,6 +35,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fstream>
+#include <QScrollArea>
+#include <QSpacerItem>
+#include <QScrollBar>
+
 
 
 QT_BEGIN_NAMESPACE
@@ -108,6 +112,7 @@ private:
     void destruct_image_display();
     bool active_image_display_flag = false;
     QByteArray image_send_temp;
+    QWidget* createChatMessageWidget(ChatMessage message);
 
 protected:
     //void keyPressEvent(QKeyEvent *event) override;  // Declaration in the header file
@@ -116,7 +121,7 @@ protected:
 
 signals:
 public slots:
-    void addMessageToTextBrowser(const QString& message);
+    void addMessageToTextBrowser(ChatMessage message);
 
 };
 

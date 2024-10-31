@@ -5,15 +5,13 @@
 
 /*
  TODO:
-    2. Make friends request system async in its own thread and fix crashing issues of get status for adding a friend
-    3. Implement sending messages
+    3. Implement async thread for inbound friend requests, same as messages, online flag on server side
     4. Add loading buffers and animations while content/data is loading/connecting
-    5. Comprehensive error handling
+    5. error handling (where comments denote)
     6. change naming convention of all buttons, auto connecting slots likely causing issues
     7. The last action to happen when client logs in is they should be shown as online on server side
     8. Have thread that can check if user is online, if so, display symbol
     9. Longterm, switch to json and api's lmao
-    10. Convert the absurd 2d vector pair types to structs
 
     left off:
 */
@@ -138,12 +136,14 @@ void MainWindow::handleSendMessageButtonClicked()
 {
     QByteArray image_data;
     int image_size = 0;
+    ChatMessage message;
 
     // Check if an image is to be sent
     if (get_active_image_display_flag() == true) {
         image_data = get_image_to_send();
         image_size = image_data.size();
         destruct_image_display();
+        message.image_arr = std::vector<char>(image_data.constBegin(), image_data.constEnd());
     }
 
     // Get conversation ID
@@ -165,6 +165,13 @@ void MainWindow::handleSendMessageButtonClicked()
     ui->Message_Input_Label->clear();
     std::string messi = user_message.toStdString();
 
+    message.message_content = messi;
+    message.conversation_id = convo_id_qstr.toInt();
+    message.timestamp = std::time(nullptr);
+    message.message_id = -1;
+    message.sender_id = active_user->get_user_id();
+    message.sender_username = active_user->get_active_user_username();
+
     // Build message metadata
     std::string header = "incoming_message\n";
     send(messageManager->get_message_manager_socket(), header.c_str(), header.size(), 0);
@@ -177,9 +184,7 @@ void MainWindow::handleSendMessageButtonClicked()
         send(messageManager->get_message_manager_socket(), image_data.constData(), image_size, 0);
     }
 
-    QString currentTimestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
-    QString message_to_append = currentTimestamp + " Me: " + QString::fromStdString(messi);
-    addMessageToTextBrowser(message_to_append);
+    addMessageToTextBrowser(message);
 
     ui->Send_Message_Button->setEnabled(true);
     isProcessing = false;
@@ -841,69 +846,67 @@ void MainWindow::set_conversations_main_page()
 
 void MainWindow::handle_switch_to_chat_button(const int &convo_id)
 {
-    //refactor this to pull only from memory instead of reemote server. All logs will be pulled once from server in seperate function
-    std::cout << "switched to chat" << std::endl;
+    std::cout << "Switched to chat with conversation ID: " << convo_id << std::endl;
 
+    // Update UI elements visibility
     ui->EmptyChatLabel->hide();
     ui->Send_Message_Button->show();
     ui->Message_Input_Label->show();
     ui->uploadButton->show();
-    /*
-    std::vector<int> members_in_chat;
-    members_in_chat.push_back(users_in_chat);
-    */
 
-    //this pulls any message that has either client_id as sender or receiver, with the relevant chat member as the other side
+    // Retrieve chat logs from memory
     std::vector<ChatMessage> chat_logs = messageManager->get_messages_from_memory(convo_id);
-    std::cout << "starting layout setup" << std::endl;
+    std::cout << "Retrieved " << chat_logs.size() << " messages from memory." << std::endl;
 
-    if(chat_logs.empty())
-    {
-        //empty layout
-        //maybe set text in middle that says "this chat is empty, start a conversation"
-        ui->EmptyChatLabel->setText("Start a conversation! :)");
-    }
-    QLayout* tempLayout = ui->TextBrowserParentWidget->layout();
-    if (tempLayout) {
-        QLayoutItem* item;
-        while ((item = tempLayout->takeAt(0)) != nullptr) {
+    // Clear existing layout and widgets in TextBrowserParentWidget
+    QVBoxLayout* parentLayout = qobject_cast<QVBoxLayout*>(ui->TextBrowserParentWidget->layout());
+    if (parentLayout) {
+        // Remove and delete all widgets from the layout
+        while (QLayoutItem* item = parentLayout->takeAt(0)) {
             if (QWidget* widget = item->widget()) {
                 widget->setParent(nullptr);
+                widget->deleteLater(); // Ensure proper deletion
             }
             delete item;
         }
-        delete tempLayout;
+    } else {
+        // If no layout exists, create a new QVBoxLayout
+        parentLayout = new QVBoxLayout(ui->TextBrowserParentWidget);
+        parentLayout->setAlignment(Qt::AlignTop);
+        ui->TextBrowserParentWidget->setLayout(parentLayout);
     }
 
-    // add new textBrowser to ui->TextBrowserParentWidget with chats
-    currentChatTextBrowser = new QTextBrowser;
-    currentChatTextBrowser->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    // Check if there are any messages in the conversation
+    if (chat_logs.empty()) {
+        ui->EmptyChatLabel->setText("Start a conversation! :)");
+        ui->EmptyChatLabel->show();
+    } else {
+        ui->EmptyChatLabel->hide();
 
-    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(ui->TextBrowserParentWidget->layout());
-    layout = new QVBoxLayout(ui->TextBrowserParentWidget);
-    ui->TextBrowserParentWidget->setLayout(layout);
+        // Iterate through each ChatMessage and add it to the UI
+        for(const auto& message : chat_logs)
+        {
+            // Create a widget for the chat message
+            QWidget* messageWidget = createChatMessageWidget(message);
 
-    layout->addWidget(currentChatTextBrowser);
-    currentChatTextBrowser->setStyleSheet("QTextBrowser{ color: #000000; }");
+            // Add the message widget to the parent layout
+            parentLayout->addWidget(messageWidget);
+        }
 
-    //embed the user_id of the other user in the chat to the send message button for later use
+        // Optionally, add a spacer to push messages to the top
+        parentLayout->addStretch();
+    }
 
-
+    // Embed the conversation ID into the Send_Message_Button for later use
     ui->Send_Message_Button->setProperty("embed_convo_id", convo_id);
 
-
-    for(auto row : chat_logs)
-    {
-        std::string sender;
-        if(row.sender_username == active_user->get_active_user_username())
-        {
-            sender = "Me";
-        }
-        else{sender = row.sender_username;}
-
-        std::string data = "[" + sender + "] " + row.message_content;
-
-        currentChatTextBrowser->append(QString::fromStdString(data));
+    // Scroll to the bottom to display the latest message
+    QWidget* parentWidget = ui->TextBrowserParentWidget->parentWidget();
+    QScrollArea* scrollArea = qobject_cast<QScrollArea*>(parentWidget);
+    if (scrollArea) {
+        QTimer::singleShot(100, scrollArea, [scrollArea]() {
+            scrollArea->verticalScrollBar()->setValue(scrollArea->verticalScrollBar()->maximum());
+        });
     }
 
 }
@@ -915,8 +918,118 @@ int MainWindow::get_push_button_embed_id()
     return embedded_id_int;
 }
 
-void MainWindow::addMessageToTextBrowser(const QString &message) {
-    currentChatTextBrowser->append(message);  // Example implementation
+QWidget* MainWindow::createChatMessageWidget(ChatMessage message)
+{
+    QWidget* messageWidget = new QWidget(this);
+    messageWidget->setProperty("messageId", QVariant(message.message_id)); // Embed message ID
+    messageWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum); // Allow the widget to adjust height based on content
+
+    // Main vertical layout
+    QVBoxLayout* mainLayout = new QVBoxLayout(messageWidget);
+    mainLayout->setContentsMargins(10, 10, 10, 10);
+    mainLayout->setSpacing(5);
+
+    // Header layout (username and timestamp)
+    QHBoxLayout* headerLayout = new QHBoxLayout();
+
+    // Determine sender label
+    QString senderLabel;
+    if(message.sender_username == active_user->get_active_user_username()) {
+        senderLabel = "<b>Me</b>";
+    } else {
+        senderLabel = "<b>" + QString::fromStdString(message.sender_username) + "</b>";
+    }
+
+    QLabel* usernameLabel = new QLabel(senderLabel, messageWidget);
+    usernameLabel->setStyleSheet("font-size: 12px; color: #333333;");
+
+    QLabel* timestampLabel = new QLabel();
+    QDateTime dateTime = QDateTime::fromSecsSinceEpoch(static_cast<qint64>(message.timestamp));
+    QString formattedTime = dateTime.toLocalTime().toString("yyyy-MM-dd hh:mm:ss");
+    timestampLabel->setText(formattedTime);
+    timestampLabel->setStyleSheet("color: gray; font-size: 10px;");
+
+    // Add username and timestamp to header layout
+    headerLayout->addWidget(usernameLabel);
+    headerLayout->addStretch();
+    headerLayout->addWidget(timestampLabel);
+
+    mainLayout->addLayout(headerLayout);
+
+    // Message text
+    QString messageText = QString::fromStdString(message.message_content);
+    QLabel* textLabel = new QLabel(messageText, messageWidget);
+    textLabel->setWordWrap(true);
+    textLabel->setStyleSheet("color: #000000; font-size: 14px;");
+    mainLayout->addWidget(textLabel);
+
+    // Optional picture
+    if (!message.image_arr.empty()) {
+        QByteArray imageData(reinterpret_cast<const char*>(message.image_arr.data()), static_cast<int>(message.image_arr.size()));
+        QPixmap pixmap;
+        if (pixmap.loadFromData(imageData)) {
+            QLabel* pictureLabel = new QLabel(messageWidget);
+            pictureLabel->setPixmap(pixmap);
+            pictureLabel->setAlignment(Qt::AlignLeft);
+            pictureLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred); // Allow picture to expand as needed
+            mainLayout->addWidget(pictureLabel);
+        } else {
+            QLabel* errorLabel = new QLabel("[Failed to load image]", messageWidget);
+            errorLabel->setStyleSheet("color: red; font-style: italic;");
+            mainLayout->addWidget(errorLabel);
+        }
+    }
+
+    // Optional: Add a separator line
+    QFrame* separator = new QFrame(messageWidget);
+    separator->setFrameShape(QFrame::HLine);
+    separator->setFrameShadow(QFrame::Sunken);
+    mainLayout->addWidget(separator);
+
+    return messageWidget;
+}
+
+void MainWindow::addMessageToTextBrowser(ChatMessage message)
+{
+    // Create the message widget
+    QWidget* messageWidget = createChatMessageWidget(message);
+
+    // Get the parent layout
+    QVBoxLayout* parentLayout = qobject_cast<QVBoxLayout*>(ui->TextBrowserParentWidget->layout());
+    if (!parentLayout) {
+        // If no layout exists, create one
+        parentLayout = new QVBoxLayout(ui->TextBrowserParentWidget);
+        parentLayout->setAlignment(Qt::AlignTop);
+        ui->TextBrowserParentWidget->setLayout(parentLayout);
+    }
+
+    // Add the message widget to the parent layout before the spacer
+    // Find the spacer (if any) and insert before it
+    int spacerIndex = -1;
+    for (int i = 0; i < parentLayout->count(); ++i) {
+        QSpacerItem* spacer = parentLayout->itemAt(i)->spacerItem();
+        if (spacer) {
+            spacerIndex = i;
+            break;
+        }
+    }
+
+    if (spacerIndex != -1) {
+        parentLayout->insertWidget(spacerIndex, messageWidget);
+    } else {
+        parentLayout->addWidget(messageWidget);
+    }
+
+    // Scroll to the bottom to show the latest message
+    // Assuming TextBrowserParentWidget is inside a QScrollArea
+    QWidget* parentWidget = ui->TextBrowserParentWidget->parentWidget();
+    QScrollArea* scrollArea = qobject_cast<QScrollArea*>(parentWidget);
+    if (scrollArea) {
+        QTimer::singleShot(100, scrollArea, [scrollArea]() {
+            scrollArea->verticalScrollBar()->setValue(scrollArea->verticalScrollBar()->maximum());
+        });
+    }
+
 }
 
 void MainWindow::handle_refresh_conversations_button()
