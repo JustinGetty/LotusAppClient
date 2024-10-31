@@ -921,8 +921,13 @@ int MainWindow::get_push_button_embed_id()
 QWidget* MainWindow::createChatMessageWidget(ChatMessage message)
 {
     QWidget* messageWidget = new QWidget(this);
+    QByteArray imageData(reinterpret_cast<const char*>(message.image_arr.data()), static_cast<int>(message.image_arr.size()));
+    QPixmap pixmap_temp;
+    pixmap_temp.loadFromData(imageData);
+    int image_height = pixmap_temp.height();
     messageWidget->setProperty("messageId", QVariant(message.message_id)); // Embed message ID
     messageWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum); // Allow the widget to adjust height based on content
+    messageWidget->setMinimumHeight(image_height + 5);
 
     // Main vertical layout
     QVBoxLayout* mainLayout = new QVBoxLayout(messageWidget);
