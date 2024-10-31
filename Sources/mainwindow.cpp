@@ -1214,6 +1214,15 @@ void MainWindow::to_main_from_settings_button()
     ui->main_window->show();
 }
 
+
+/*
+ UI
+
+
+*/
+
+
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -1238,6 +1247,11 @@ MainWindow::MainWindow(QWidget *parent)
     ui->login_window->show();
     ui->display_image_widget->hide();
 
+    /* ---- UI SETUP ------- */
+
+    /* General Window Setup */
+    setWindowFlags(Qt::FramelessWindowHint);
+
     /*
     setWindowFlags(Qt::FramelessWindowHint);
     connect(ui->closeButton, &QPushButton::clicked, this, &MainWindow::close);
@@ -1246,6 +1260,52 @@ MainWindow::MainWindow(QWidget *parent)
     // Assuming 'headerWidget' is the name of your custom header widget
     ui->headerWidget->setStyleSheet("background-color: #3498db; color: white;");
     */
+
+
+    /*-------Login Window Setup ------- */
+
+    QString htmlText = R"(
+    <span style="line-height: 1.5; font-size: 14px; color: #7a8c8e; font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 300;">
+        Don't give us your personal data, we don't want it!<br>
+        Your data encrypted, secure, and never sold<br>
+        Fast and reliable socket stream communication
+    </span>
+    )";
+
+    ui->login_about_desc_label->setText(htmlText);
+
+
+    QLinearGradient gradient(0, 0, 1, 1);
+    gradient.setCoordinateMode(QGradient::StretchToDeviceMode);
+    gradient.setColorAt(0, QColor(38, 55, 59));  // #26373b
+    gradient.setColorAt(1, QColor(51, 73, 76));  // #33494c
+
+    QPalette palette;
+    palette.setBrush(QPalette::Window, QBrush(gradient));
+    ui->login_background->setAutoFillBackground(true);
+    ui->login_background->setPalette(palette);
+
+    QPixmap logo_pixmap("/Users/justin/the_harbor/Chat/ChatWidget/LotusAppClient/Resources/lotus-app-icon-no-bckgrnd.png");
+    if (logo_pixmap.isNull()) {
+        std::cout << "Failed to load image." << std::endl;
+    } else {
+        QPixmap cropped_pixmap = logo_pixmap.scaled(ui->login_logo_label->size(),
+                                                    Qt::KeepAspectRatioByExpanding,
+                                                    Qt::SmoothTransformation);
+
+        // Set the cropped pixmap to the label
+        ui->login_logo_label->setPixmap(cropped_pixmap);
+    }
+
+
+
+
+
+
+
+    /*---- END UI SETUP--------*/
+
+
 
 
     //refactor here. This creates a new thread for sending and recievung messages.

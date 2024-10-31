@@ -38,6 +38,8 @@
 #include <QScrollArea>
 #include <QSpacerItem>
 #include <QScrollBar>
+#include <QPainter>
+#include <QLinearGradient>
 
 
 
