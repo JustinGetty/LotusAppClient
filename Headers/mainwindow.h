@@ -40,6 +40,8 @@
 #include <QScrollBar>
 #include <QPainter>
 #include <QLinearGradient>
+#include <QRegion>
+#include <QPainterPath>
 
 
 
@@ -92,6 +94,7 @@ private slots:
     void to_settings_from_main_button();
     void handle_confirm_pfp_change_btn();
     void handle_delete_image_btn();
+    void setRoundedCorners();
 
 private:
     Ui::MainWindow *ui;

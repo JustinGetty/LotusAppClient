@@ -1221,6 +1221,11 @@ void MainWindow::to_main_from_settings_button()
 
 */
 
+void MainWindow::setRoundedCorners() {
+    QPainterPath path;
+    path.addRoundedRect(centralWidget()->rect(), 10, 10);
+    centralWidget()->setMask(QRegion(path.toFillPolygon().toPolygon()));
+}
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -1251,6 +1256,18 @@ MainWindow::MainWindow(QWidget *parent)
 
     /* General Window Setup */
     setWindowFlags(Qt::FramelessWindowHint);
+    setAttribute(Qt::WA_TranslucentBackground);
+    centralWidget()->setStyleSheet("border-radius: 10px; background-color: rgba(0,0,0,0.0);");  // Adjust color and radius as needed
+
+    // Ensure the central widget fills the main window
+    centralWidget()->setAutoFillBackground(true);
+    centralWidget()->setStyleSheet("border-radius: 15px; background-color: #f0f0f0;");
+    setCentralWidget(centralWidget());
+
+    // Call the method to set rounded corners
+    setRoundedCorners();
+
+
 
     /*
     setWindowFlags(Qt::FramelessWindowHint);
@@ -1265,7 +1282,7 @@ MainWindow::MainWindow(QWidget *parent)
     /*-------Login Window Setup ------- */
 
     QString htmlText = R"(
-    <span style="line-height: 1.5; font-size: 14px; color: #7a8c8e; font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 300;">
+    <span style="line-height: 5.7; font-size: 16px; color: #fffeea; font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 300;">
         Don't give us your personal data, we don't want it!<br>
         Your data encrypted, secure, and never sold<br>
         Fast and reliable socket stream communication
@@ -1273,6 +1290,16 @@ MainWindow::MainWindow(QWidget *parent)
     )";
 
     ui->login_about_desc_label->setText(htmlText);
+
+    htmlText = R"(
+    <span style="line-height: 5.7; font-size: 16px; color: #fffeea; font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 300;">
+        Passwords enrypted with Bcrypt<br>
+        End-To-End encryption coming soon<br>
+        High performance at low hardware cost
+    </span>
+    )";
+
+    ui->login_features_desc_label->setText(htmlText);
 
 
     QLinearGradient gradient(0, 0, 1, 1);
@@ -1284,6 +1311,32 @@ MainWindow::MainWindow(QWidget *parent)
     palette.setBrush(QPalette::Window, QBrush(gradient));
     ui->login_background->setAutoFillBackground(true);
     ui->login_background->setPalette(palette);
+
+    ui->line->setVisible(true);
+    ui->line_2->setVisible(true);
+    ui->line->raise();
+    ui->line->update();
+
+    QFrame* line = new QFrame(this);
+    line->setGeometry(629, 104, 2, 596);  // Adjust as needed
+    line->setFrameShape(QFrame::VLine);
+    line->setFrameShadow(QFrame::Sunken);
+    line->show();
+
+    QFrame* line2 = new QFrame(this);
+    line2->setGeometry(837, 338, 280, 2);  // Adjust as needed
+    line2->setFrameShape(QFrame::HLine);
+    line2->setFrameShadow(QFrame::Sunken);
+    line2->show();
+
+    QFrame* line3 = new QFrame(this);
+    line3->setGeometry(837, 428, 280, 2);  // Adjust as needed
+    line3->setFrameShape(QFrame::HLine);
+    line3->setFrameShadow(QFrame::Sunken);
+    line3->show();
+
+    QRect lineRect = ui->line->geometry();
+    qDebug() << "Line geometry: " << lineRect;
 
     QPixmap logo_pixmap("/Users/justin/the_harbor/Chat/ChatWidget/LotusAppClient/Resources/lotus-app-icon-no-bckgrnd.png");
     if (logo_pixmap.isNull()) {

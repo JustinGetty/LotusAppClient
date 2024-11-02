@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1280</width>
-    <height>776</height>
+    <width>1391</width>
+    <height>836</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,17 +31,51 @@ QPushButton:hover {
 QPushButton:pressed {
     background-color: #3e8e41;  /* Even darker green when pressed */
 }
+
+
 </string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="minimumSize">
+    <size>
+     <width>1339</width>
+     <height>776</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>1339</width>
+     <height>776</height>
+    </size>
+   </property>
    <widget class="QStackedWidget" name="stackedWidget">
     <property name="geometry">
      <rect>
-      <x>-59</x>
-      <y>-1</y>
+      <x>0</x>
+      <y>0</y>
       <width>1339</width>
       <height>776</height>
      </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>1339</width>
+      <height>776</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>1341</width>
+      <height>778</height>
+     </size>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QStackedWidget
+{
+border-radius: 10px;
+background-color: #444444;
+
+}</string>
     </property>
     <property name="currentIndex">
      <number>2</number>
@@ -1030,6 +1064,12 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <height>776</height>
       </size>
      </property>
+     <property name="maximumSize">
+      <size>
+       <width>1341</width>
+       <height>778</height>
+      </size>
+     </property>
      <property name="palette">
       <palette>
        <active>
@@ -1066,10 +1106,10 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <widget class="QWidget" name="login_background" native="true">
       <property name="geometry">
        <rect>
-        <x>58</x>
-        <y>-2</y>
-        <width>1418</width>
-        <height>803</height>
+        <x>0</x>
+        <y>0</y>
+        <width>1339</width>
+        <height>776</height>
        </rect>
       </property>
       <property name="minimumSize">
@@ -1078,19 +1118,25 @@ li.checked::marker { content: &quot;\2612&quot;; }
         <height>776</height>
        </size>
       </property>
+      <property name="maximumSize">
+       <size>
+        <width>1341</width>
+        <height>778</height>
+       </size>
+      </property>
       <property name="styleSheet">
        <string notr="true">QWidget {
 background-color: linear-gradient(#26373b, #33494c);
-
+border-radius: 10px;
 /*26373b - 33494c*/
 }</string>
       </property>
       <widget class="QLabel" name="label">
        <property name="geometry">
         <rect>
-         <x>837</x>
+         <x>842</x>
          <y>351</y>
-         <width>104</width>
+         <width>99</width>
          <height>30</height>
         </rect>
        </property>
@@ -1106,9 +1152,9 @@ background-color: linear-gradient(#26373b, #33494c);
       <widget class="QLabel" name="label_2">
        <property name="geometry">
         <rect>
-         <x>839</x>
+         <x>841</x>
          <y>448</y>
-         <width>83</width>
+         <width>81</width>
          <height>31</height>
         </rect>
        </property>
@@ -1134,9 +1180,13 @@ background-color: linear-gradient(#26373b, #33494c);
         <string notr="true">QPushButton {
 	background-color: #EDF2F4;
 	color: #000000;
-	border-radius: .5;
 	border-style: solid;
-	border-width: 0;
+	border-width: 2;
+	border-radius: .8;
+	border-color: #EDF2F4;
+	font-size: 14px;
+	color: #000001;
+
 }</string>
        </property>
        <property name="text">
@@ -1146,7 +1196,7 @@ background-color: linear-gradient(#26373b, #33494c);
       <widget class="QLineEdit" name="user_login_password">
        <property name="geometry">
         <rect>
-         <x>836</x>
+         <x>840</x>
          <y>493</y>
          <width>210</width>
          <height>30</height>
@@ -1157,16 +1207,17 @@ background-color: linear-gradient(#26373b, #33494c);
 	border-style: solid;
 	border-width: 0;
 	background-color: rgba(255, 0, 0, 0.0);
-	color: #000000;
+	color: #d5dbd5;
+	font-size: 16px;
 }</string>
        </property>
       </widget>
       <widget class="QLineEdit" name="user_login_name">
        <property name="geometry">
         <rect>
-         <x>842</x>
+         <x>841</x>
          <y>384</y>
-         <width>274</width>
+         <width>275</width>
          <height>29</height>
         </rect>
        </property>
@@ -1374,7 +1425,8 @@ background-color: linear-gradient(#26373b, #33494c);
 	border-style: solid;
 	border-width: 0;
 	background-color: rgba(255, 0, 0, 0.0);
-	color: #000000;
+	color: #d5dbd5;
+	font-size: 16px;
 }</string>
        </property>
       </widget>
@@ -1394,17 +1446,18 @@ background-color: linear-gradient(#26373b, #33494c);
       <widget class="QPushButton" name="switch_to_create_account_btn">
        <property name="geometry">
         <rect>
-         <x>989</x>
-         <y>692</y>
+         <x>985</x>
+         <y>693</y>
          <width>116</width>
          <height>32</height>
         </rect>
        </property>
        <property name="styleSheet">
         <string notr="true">QPushButton {
-	color: #000000;
+	color: #ffffff;
 	border-style: solid;
 	border-width: 0;
+	text-decoration: underline;
 }</string>
        </property>
        <property name="text">
@@ -1438,6 +1491,16 @@ background-color: linear-gradient(#26373b, #33494c);
          <height>596</height>
         </rect>
        </property>
+       <property name="styleSheet">
+        <string notr="true">QLine
+{
+background-color: #000000;
+color: #000000;
+}</string>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Shadow::Plain</enum>
+       </property>
        <property name="orientation">
         <enum>Qt::Orientation::Vertical</enum>
        </property>
@@ -1446,7 +1509,7 @@ background-color: linear-gradient(#26373b, #33494c);
        <property name="geometry">
         <rect>
          <x>837</x>
-         <y>338</y>
+         <y>330</y>
          <width>280</width>
          <height>20</height>
         </rect>
@@ -1471,10 +1534,10 @@ background-color: linear-gradient(#26373b, #33494c);
       <widget class="QLabel" name="login_about_desc_label">
        <property name="geometry">
         <rect>
-         <x>50</x>
+         <x>55</x>
          <y>313</y>
-         <width>309</width>
-         <height>60</height>
+         <width>381</width>
+         <height>109</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -1487,27 +1550,7 @@ background-color: linear-gradient(#26373b, #33494c);
 }</string>
        </property>
        <property name="text">
-        <string>Don't give us your personal data, we don't want it!
-Your data encrypted, secure, and never sold
-Fast and reliable socket stream communication</string>
-       </property>
-       <property name="wordWrap">
-        <bool>false</bool>
-       </property>
-      </widget>
-      <widget class="QLabel" name="login_features_desc_label">
-       <property name="geometry">
-        <rect>
-         <x>42</x>
-         <y>465</y>
-         <width>294</width>
-         <height>51</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Passwords enrypted with Bcrypt
-End-To-End encryption coming soon
-High performance at low hardware cost </string>
+        <string/>
        </property>
        <property name="wordWrap">
         <bool>false</bool>
@@ -1516,7 +1559,7 @@ High performance at low hardware cost </string>
       <widget class="QLabel" name="label_13">
        <property name="geometry">
         <rect>
-         <x>39</x>
+         <x>51</x>
          <y>431</y>
          <width>304</width>
          <height>24</height>
@@ -1550,7 +1593,7 @@ High performance at low hardware cost </string>
 }</string>
        </property>
        <property name="text">
-        <string>About Lotus</string>
+        <string>About</string>
        </property>
       </widget>
       <widget class="Line" name="line_4">
@@ -1566,6 +1609,51 @@ High performance at low hardware cost </string>
         <enum>Qt::Orientation::Horizontal</enum>
        </property>
       </widget>
+      <widget class="QLabel" name="label_7">
+       <property name="geometry">
+        <rect>
+         <x>105</x>
+         <y>89</y>
+         <width>332</width>
+         <height>70</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLabel
+{
+	color: #ffffff;
+	font-size: 40px;
+}</string>
+       </property>
+       <property name="text">
+        <string>Welcome to Lotus</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="login_features_desc_label">
+       <property name="geometry">
+        <rect>
+         <x>50</x>
+         <y>485</y>
+         <width>309</width>
+         <height>109</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLabel:
+{
+	line-height: 150%;
+	padding: 5px;
+	font-size: 14px;
+	color: #333333;
+}</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="wordWrap">
+        <bool>false</bool>
+       </property>
+      </widget>
       <zorder>label_2</zorder>
       <zorder>login_account_button</zorder>
       <zorder>label_5</zorder>
@@ -1574,14 +1662,15 @@ High performance at low hardware cost </string>
       <zorder>label</zorder>
       <zorder>user_login_password</zorder>
       <zorder>login_error_message</zorder>
-      <zorder>line</zorder>
       <zorder>line_2</zorder>
       <zorder>login_logo_label</zorder>
       <zorder>login_about_desc_label</zorder>
-      <zorder>login_features_desc_label</zorder>
       <zorder>label_13</zorder>
       <zorder>label_14</zorder>
       <zorder>line_4</zorder>
+      <zorder>label_7</zorder>
+      <zorder>login_features_desc_label</zorder>
+      <zorder>line</zorder>
      </widget>
     </widget>
     <widget class="QWidget" name="friends_window">
@@ -2170,16 +2259,6 @@ color: #000000;
       <zorder>create_user_input</zorder>
      </widget>
     </widget>
-   </widget>
-   <widget class="QWidget" name="headerWidget" native="true">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>1280</width>
-      <height>25</height>
-     </rect>
-    </property>
    </widget>
   </widget>
  </widget>
