@@ -1227,6 +1227,28 @@ void MainWindow::setRoundedCorners() {
     centralWidget()->setMask(QRegion(path.toFillPolygon().toPolygon()));
 }
 
+void MainWindow::mousePressEvent(QMouseEvent *event) {
+    if (event->button() == Qt::LeftButton && ui->header_buttons_widget->geometry().contains(event->pos())) {
+        isDragging = true;
+        dragStartPosition = event->globalPos() - this->frameGeometry().topLeft();
+        event->accept();
+    }
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent *event) {
+    if (isDragging && (event->buttons() & Qt::LeftButton)) {
+        QPoint newTopLeft = event->globalPos() - dragStartPosition;
+        this->move(newTopLeft);
+        event->accept();
+    }
+}
+
+void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
+    if (event->button() == Qt::LeftButton) {
+        isDragging = false;
+        event->accept();
+    }
+}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),

@@ -44,6 +44,7 @@
 #include <QPainterPath>
 #include <QApplication>
 #include <QHBoxLayout>
+#include <QMouseEvent>
 
 
 QT_BEGIN_NAMESPACE
@@ -119,11 +120,16 @@ private:
     bool active_image_display_flag = false;
     QByteArray image_send_temp;
     QWidget* createChatMessageWidget(ChatMessage message);
+    bool isDragging = false;
+    QPoint dragStartPosition;
 
 protected:
     //void keyPressEvent(QKeyEvent *event) override;  // Declaration in the header file
     bool eventFilter(QObject *watched, QEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
 signals:
 public slots:

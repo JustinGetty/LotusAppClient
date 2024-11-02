@@ -1451,7 +1451,7 @@ background-color: #4682b4;
        <property name="geometry">
         <rect>
          <x>985</x>
-         <y>693</y>
+         <y>692</y>
          <width>116</width>
          <height>32</height>
         </rect>
@@ -2268,9 +2268,9 @@ color: #000000;
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>2</y>
-      <width>104</width>
-      <height>20</height>
+      <y>0</y>
+      <width>1335</width>
+      <height>30</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -2283,7 +2283,7 @@ color: #000000;
      <property name="geometry">
       <rect>
        <x>8</x>
-       <y>4</y>
+       <y>5</y>
        <width>13</width>
        <height>13</height>
       </rect>
@@ -2309,7 +2309,7 @@ background-color: #e74c3c;
      <property name="geometry">
       <rect>
        <x>27</x>
-       <y>4</y>
+       <y>5</y>
        <width>13</width>
        <height>13</height>
       </rect>
@@ -2335,7 +2335,7 @@ background-color: #f39c12;
      <property name="geometry">
       <rect>
        <x>46</x>
-       <y>4</y>
+       <y>5</y>
        <width>13</width>
        <height>13</height>
       </rect>
