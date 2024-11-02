@@ -42,7 +42,8 @@
 #include <QLinearGradient>
 #include <QRegion>
 #include <QPainterPath>
-
+#include <QApplication>
+#include <QHBoxLayout>
 
 
 QT_BEGIN_NAMESPACE

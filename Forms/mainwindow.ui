@@ -1173,7 +1173,7 @@ border-radius: 10px;
          <x>838</x>
          <y>560</y>
          <width>280</width>
-         <height>32</height>
+         <height>38</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -1186,8 +1186,12 @@ border-radius: 10px;
 	border-color: #EDF2F4;
 	font-size: 14px;
 	color: #000001;
-
-}</string>
+	padding: 8px 16px;
+}
+QPushButton:hover {
+background-color: #4682b4;
+}
+</string>
        </property>
        <property name="text">
         <string>Login</string>
@@ -2258,6 +2262,100 @@ color: #000000;
       <zorder>create_pwd_input</zorder>
       <zorder>create_user_input</zorder>
      </widget>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="header_buttons_widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>2</y>
+      <width>104</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QWidget
+{
+	background-color: rgba(0,0,0,0.0);
+}</string>
+    </property>
+    <widget class="QPushButton" name="exit_app_button">
+     <property name="geometry">
+      <rect>
+       <x>8</x>
+       <y>4</y>
+       <width>13</width>
+       <height>13</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton
+{
+background-color: #ff5f57;
+border-radius: 6px;
+border-width: 0;
+
+}
+QPushButton:hover
+{
+background-color: #e74c3c;
+}</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="minimize_app_button">
+     <property name="geometry">
+      <rect>
+       <x>27</x>
+       <y>4</y>
+       <width>13</width>
+       <height>13</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton
+{
+background-color: #ffbd2e;
+border-radius: 6px;
+border-width: 0;
+
+}
+QPushButton:hover
+{
+background-color: #f39c12;
+}</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="fullscreen_app_button">
+     <property name="geometry">
+      <rect>
+       <x>46</x>
+       <y>4</y>
+       <width>13</width>
+       <height>13</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton
+{
+background-color: #28c940;
+border-radius: 6px;
+border-width: 0;
+
+}
+QPushButton:hover
+{
+background-color: #27ae60;
+}</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
     </widget>
    </widget>
   </widget>

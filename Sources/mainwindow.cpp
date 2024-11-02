@@ -1268,7 +1268,6 @@ MainWindow::MainWindow(QWidget *parent)
     setRoundedCorners();
 
 
-
     /*
     setWindowFlags(Qt::FramelessWindowHint);
     connect(ui->closeButton, &QPushButton::clicked, this, &MainWindow::close);
@@ -1401,6 +1400,18 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->confirm_profile_pic_btn, &QPushButton::clicked, this, &MainWindow::handle_confirm_pfp_change_btn);
     connect(ui->delete_image_send, &QPushButton::clicked, this, &MainWindow::handle_delete_image_btn);
     // Connect buttons to functions to handle close, minimize, and maximize
+
+    connect(ui->exit_app_button, &QPushButton::clicked, this, []() {
+        QApplication::quit();
+    });
+    connect(ui->minimize_app_button, &QPushButton::clicked, this, &QWidget::showMinimized);
+    connect(ui->fullscreen_app_button, &QPushButton::clicked, this, [this]() {
+        if (this->window()->isMaximized()) {
+            this->window()->showNormal();
+        } else {
+            this->window()->showMaximized();
+        }
+    });
 
     bool isConnected = connect(ui->refresh_friend_requests_btn, &QPushButton::clicked, this, &MainWindow::on_refresh_friend_requests_btn_clicked);
     if (!isConnected) {
