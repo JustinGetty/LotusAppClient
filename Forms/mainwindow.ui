@@ -78,7 +78,7 @@ background-color: #444444;
 }</string>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>4</number>
     </property>
     <widget class="QWidget" name="settings_window">
      <property name="styleSheet">
@@ -1438,7 +1438,7 @@ background-color: #4682b4;
        <property name="geometry">
         <rect>
          <x>843</x>
-         <y>650</y>
+         <y>620</y>
          <width>190</width>
          <height>33</height>
         </rect>
@@ -1451,7 +1451,7 @@ background-color: #4682b4;
        <property name="geometry">
         <rect>
          <x>985</x>
-         <y>650</y>
+         <y>620</y>
          <width>116</width>
          <height>32</height>
         </rect>
@@ -1490,7 +1490,7 @@ background-color: #4682b4;
        <property name="geometry">
         <rect>
          <x>223</x>
-         <y>141</y>
+         <y>233</y>
          <width>180</width>
          <height>157</height>
         </rect>
@@ -1503,7 +1503,7 @@ background-color: #4682b4;
        <property name="geometry">
         <rect>
          <x>124</x>
-         <y>378</y>
+         <y>470</y>
          <width>539</width>
          <height>31</height>
         </rect>
@@ -1524,7 +1524,7 @@ background-color: #4682b4;
        <property name="geometry">
         <rect>
          <x>159</x>
-         <y>315</y>
+         <y>407</y>
          <width>332</width>
          <height>70</height>
         </rect>
