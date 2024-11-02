@@ -1303,61 +1303,50 @@ MainWindow::MainWindow(QWidget *parent)
     /*-------Login Window Setup ------- */
 
     QString htmlText = R"(
-    <span style="line-height: 5.7; font-size: 16px; color: #fffeea; font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 300;">
-        Don't give us your personal data, we don't want it!<br>
-        Your data encrypted, secure, and never sold<br>
-        Fast and reliable socket stream communication
-    </span>
-    )";
-
-    ui->login_about_desc_label->setText(htmlText);
+    <div style="line-height: 1.6; font-size: 18px; color: #f0f0f0; font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 300; padding: 10px;">
+        <p style="margin-bottom: 15px;">Don't give us your personal data, we don't want it!</p>
+        <p style="margin-bottom: 15px;">Your data is encrypted, secure, and never sold.</p>
+        <p style="margin-bottom: 15px;">Fast and reliable socket stream communication.</p>
+    </div>
+)";
+    //ui->login_about_desc_label_2->setText(htmlText);
 
     htmlText = R"(
-    <span style="line-height: 5.7; font-size: 16px; color: #fffeea; font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 300;">
-        Passwords enrypted with Bcrypt<br>
-        End-To-End encryption coming soon<br>
-        High performance at low hardware cost
-    </span>
-    )";
-
+    <div style="line-height: 1.6; font-size: 18px; color: #f0f0f0; font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 300; padding: 10px;">
+        <p style="margin-bottom: 15px;">Encrypted, Safe, Secure. Lotus.</p>
+    </div>
+)";
     ui->login_features_desc_label->setText(htmlText);
 
 
     QLinearGradient gradient(0, 0, 1, 1);
     gradient.setCoordinateMode(QGradient::StretchToDeviceMode);
-    gradient.setColorAt(0, QColor(38, 55, 59));  // #26373b
-    gradient.setColorAt(1, QColor(51, 73, 76));  // #33494c
+    gradient.setColorAt(0, QColor(235, 242, 250));  // #26373b(green ish)
+    gradient.setColorAt(0.35, QColor(66, 122, 161));
+    gradient.setColorAt(1, QColor(6, 71, 137));  // #33494c(green) rgb(38, 93, 223) blue
 
     QPalette palette;
     palette.setBrush(QPalette::Window, QBrush(gradient));
     ui->login_background->setAutoFillBackground(true);
     ui->login_background->setPalette(palette);
 
-    ui->line->setVisible(true);
-    ui->line_2->setVisible(true);
-    ui->line->raise();
-    ui->line->update();
-
     QFrame* line = new QFrame(this);
-    line->setGeometry(629, 104, 2, 596);  // Adjust as needed
+    line->setGeometry(629, 104, 2, 596);
     line->setFrameShape(QFrame::VLine);
-    line->setFrameShadow(QFrame::Sunken);
+    line->setFrameShadow(QFrame::Plain);
     line->show();
 
     QFrame* line2 = new QFrame(this);
-    line2->setGeometry(837, 338, 280, 2);  // Adjust as needed
+    line2->setGeometry(837, 338, 280, 2);
     line2->setFrameShape(QFrame::HLine);
-    line2->setFrameShadow(QFrame::Sunken);
+    line2->setFrameShadow(QFrame::Plain);
     line2->show();
 
     QFrame* line3 = new QFrame(this);
-    line3->setGeometry(837, 428, 280, 2);  // Adjust as needed
+    line3->setGeometry(837, 428, 280, 2);
     line3->setFrameShape(QFrame::HLine);
-    line3->setFrameShadow(QFrame::Sunken);
+    line3->setFrameShadow(QFrame::Plain);
     line3->show();
-
-    QRect lineRect = ui->line->geometry();
-    qDebug() << "Line geometry: " << lineRect;
 
     QPixmap logo_pixmap("/Users/justin/the_harbor/Chat/ChatWidget/LotusAppClient/Resources/lotus-app-icon-no-bckgrnd.png");
     if (logo_pixmap.isNull()) {
