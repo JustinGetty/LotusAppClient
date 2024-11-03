@@ -344,14 +344,14 @@ void MainWindow::set_mainview_objects_tot()
 
 void MainWindow::switch_to_create_account_view()
 {
-    ui->login_window->hide();
-    ui->create_account->show();
+    ui->login_mst_object_widget->hide();
+    ui->create_mst_object_widget->show();
 }
 
 void MainWindow::switch_to_login_account_view()
 {
-    ui->create_account->hide();
-    ui->login_window->show();
+    ui->create_mst_object_widget->hide();
+    ui->login_mst_object_widget->show();
 }
 
 void MainWindow::switch_to_main_view_after_login()
@@ -1273,6 +1273,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->create_account->hide();
     ui->login_window->show();
     ui->display_image_widget->hide();
+
+    ui->create_mst_object_widget->hide();
 
     /* ---- UI SETUP ------- */
 
