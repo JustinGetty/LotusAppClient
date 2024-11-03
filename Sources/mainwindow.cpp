@@ -248,10 +248,10 @@ void MainWindow::on_login_account_button_clicked()
 
     isLoginProcessing = true;
 
-    if ((!ui->user_login_name->text().isEmpty()) && (!ui->user_login_password->text().isEmpty()))
+    if ((!ui->user_login_name_2->text().isEmpty()) && (!ui->user_login_password_2->text().isEmpty()))
     {
-        std::string username = (ui->user_login_name->text()).toStdString();
-        std::string password = (ui->user_login_password->text()).toStdString();
+        std::string username = (ui->user_login_name_2->text()).toStdString();
+        std::string password = (ui->user_login_password_2->text()).toStdString();
         std::string user_pw = username + "|" + password;
 
         //eventually this needs to be actual client socket and not hard coded
@@ -925,8 +925,8 @@ QWidget* MainWindow::createChatMessageWidget(ChatMessage message)
     QPixmap pixmap_temp;
     pixmap_temp.loadFromData(imageData);
     int image_height = pixmap_temp.height();
-    messageWidget->setProperty("messageId", QVariant(message.message_id)); // Embed message ID
-    messageWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum); // Allow the widget to adjust height based on content
+    messageWidget->setProperty("messageId", QVariant(message.message_id));
+    messageWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
     messageWidget->setMinimumHeight(image_height + 5);
 
     // Main vertical layout
@@ -1396,8 +1396,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->uploadButton, &QPushButton::clicked, this, &MainWindow::handle_upload_button_clicked);
     disconnect(ui->create_account_button, &QPushButton::clicked, this, &MainWindow::on_create_account_button_clicked);
     connect(ui->create_account_button, &QPushButton::clicked, this, &MainWindow::on_create_account_button_clicked);
-    connect(ui->login_account_button, &QPushButton::clicked, this, &MainWindow::on_login_account_button_clicked);
-    connect(ui->switch_to_create_account_btn, &QPushButton::clicked, this, &MainWindow::switch_to_create_account_view);
+    connect(ui->login_account_button_2, &QPushButton::clicked, this, &MainWindow::on_login_account_button_clicked);
+    connect(ui->switch_to_create_account_btn_2, &QPushButton::clicked, this, &MainWindow::switch_to_create_account_view);
     connect(ui->switch_to_login_view, &QPushButton::clicked, this, &MainWindow::switch_to_login_account_view);
     connect(ui->add_friend_window_btn, &QPushButton::clicked, this, &MainWindow::switch_to_friends_view);
     connect(ui->user_search_button, &QPushButton::clicked, this, &MainWindow::send_friend_request);
