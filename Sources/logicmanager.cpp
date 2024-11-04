@@ -105,7 +105,7 @@ std::string logicmanager::get_status(int client_socket) {
 
 int logicmanager::fetch_user_id_from_server(const std::string &username)
 {
-    char buffer[8];
+    char buffer[12];
     std::string received_data;
     std::string type = "get_user_id\n";
 
@@ -174,6 +174,7 @@ QPixmap logicmanager::pull_profile_picture()
 {
     QPixmap profile_picture;
 
+    int image_size = 0;
     // Send the request header
     std::string header = "get_profile_pic\n";
     if (send(logic_manager_socket, header.c_str(), header.size(), 0) < 0)
@@ -182,14 +183,32 @@ QPixmap logicmanager::pull_profile_picture()
         return profile_picture;
     }
 
-    // Receive the image size
-    uint64_t image_size;
-    if (recv(logic_manager_socket, &image_size, sizeof(image_size), 0) <= 0)
+    // Receive the image size as a string
+    char image_size_buffer[16]; // Buffer to hold the image size as a string
+    memset(image_size_buffer, 0, sizeof(image_size_buffer));
+    if (recv(logic_manager_socket, image_size_buffer, sizeof(image_size_buffer) - 1, 0) <= 0)
     {
         std::cerr << "Failed to receive image size." << std::endl;
         return profile_picture;
     }
-    std::cerr << "Successfully received image size: " << image_size << std::endl;
+
+    std::string image_size_str(image_size_buffer);
+    image_size_str.erase(std::remove(image_size_str.begin(), image_size_str.end(), '\n'), image_size_str.end()); // Remove any newline characters
+
+    if (image_size_str == "0")
+    {
+        std::cerr << "No profile picture available." << std::endl;
+        return profile_picture; // Return an empty QPixmap if there is no profile picture
+    }
+
+    std::cerr << "Successfully received image size: " << image_size_str << std::endl;
+
+    try {
+        image_size = std::stoi(image_size_str);
+    } catch (const std::invalid_argument& e) {
+        std::cerr << "Invalid image size received: " << image_size_str << std::endl;
+        return profile_picture; // Return an empty QPixmap on invalid input
+    }
 
     // Allocate a buffer for the image data
     std::vector<char> buffer(image_size);

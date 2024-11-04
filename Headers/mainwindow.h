@@ -128,6 +128,9 @@ private:
     QVBoxLayout* parentLayout = nullptr;
     QVBoxLayout* containerLayout = nullptr;
     void appendMessageToChat(const ChatMessage& message);
+    QFrame* line = nullptr;
+    QFrame* line2 = nullptr;
+    QFrame* line3 = nullptr;
 
 protected:
     //void keyPressEvent(QKeyEvent *event) override;  // Declaration in the header file

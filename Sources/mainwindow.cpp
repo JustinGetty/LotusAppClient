@@ -273,6 +273,8 @@ void MainWindow::on_login_account_button_clicked()
 
         std::cout << "Fetching user id" << std::endl;
         //int fetched_user_id = relationsManager->fetch_user_id_from_server(username);
+
+        //breaks here often
         int fetched_user_id = logicManager->fetch_user_id_from_server(username);
 
         std::cout << "Fetched user id" << std::endl;
@@ -347,8 +349,9 @@ void MainWindow::set_mainview_objects_tot()
     set_conversations_main_page();
     QPixmap pixmap = active_user->get_profile_pic_pmap();
     ui->profile_pic_main_label->setPixmap(pixmap.scaled(ui->profile_pic_main_label->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-
-
+    line->hide();
+    line2->hide();
+    line3->hide();
 }
 
 void MainWindow::switch_to_create_account_view()
@@ -865,6 +868,39 @@ void MainWindow::handle_switch_to_chat_button(const int &convo_id)
     ui->Message_Input_Label->show();
     ui->uploadButton->show();
 
+    chatScrollArea->setStyleSheet(
+        "QScrollBar:vertical {"
+        "    background: #f0f0f0;"         // Background color of the scrollbar
+        "    width: 12px;"                 // Width of the vertical scrollbar
+        "    margin: 0px 0px 0px 0px;"     // Margins
+        "    border: 1px solid #dcdcdc;"   // Border around the scrollbar
+        "}"
+        "QScrollBar::handle:vertical {"
+        "    background: #b0b0b0;"         // Color of the handle
+        "    min-height: 20px;"            // Minimum height of the handle
+        "    border-radius: 4px;"          // Rounded corners
+        "}"
+        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
+        "    height: 0px;"                 // Removes the up and down arrow buttons
+        "    subcontrol-origin: margin;"
+        "}"
+        "QScrollBar:horizontal {"
+        "    background: #f0f0f0;"         // Background color of the horizontal scrollbar
+        "    height: 12px;"                // Height of the horizontal scrollbar
+        "    margin: 0px 0px 0px 0px;"     // Margins
+        "    border: 1px solid #dcdcdc;"   // Border around the scrollbar
+        "}"
+        "QScrollBar::handle:horizontal {"
+        "    background: #b0b0b0;"         // Color of the handle
+        "    min-width: 20px;"             // Minimum width of the handle
+        "    border-radius: 4px;"          // Rounded corners
+        "}"
+        "QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {"
+        "    width: 0px;"                  // Removes the left and right arrow buttons
+        "    subcontrol-origin: margin;"
+        "}"
+        );
+
     // Retrieve chat logs from memory
     std::vector<ChatMessage> chat_logs = messageManager->get_messages_from_memory(convo_id);
     std::cout << "Retrieved " << chat_logs.size() << " messages from memory." << std::endl;
@@ -958,36 +994,32 @@ QWidget* MainWindow::createChatMessageWidget(const ChatMessage& message)
 
     // Set background color depending on sender
     QString bubbleStyle = isSentByMe
-                              ? "background-color: #DCF8C6; border-radius: 10px; padding: 10px;"
-                              : "background-color: #FFFFFF; border-radius: 10px; padding: 10px;";
+                              ? "background-color: #064789; border-radius: 10px; padding: 8px;"
+                              : "background-color: #EBF2FA; border-radius: 10px; padding: 8px;";
     bubbleWidget->setStyleSheet(bubbleStyle);
 
     // Create a vertical layout for the bubbleWidget
     QVBoxLayout* bubbleLayout = new QVBoxLayout(bubbleWidget);
-    bubbleLayout->setContentsMargins(5, 5, 5, 5);
-    bubbleLayout->setSpacing(5);
+    bubbleLayout->setContentsMargins(5, 2, 5, 2); // Reduce top and bottom margins
+    bubbleLayout->setSpacing(2); // Reduce spacing between elements
 
-    // Header layout (username and timestamp)
-    QHBoxLayout* headerLayout = new QHBoxLayout();
+    // Header layout (only username for received messages)
+    if (!isSentByMe) {
+        QHBoxLayout* headerLayout = new QHBoxLayout();
+        headerLayout->setContentsMargins(0, 0, 0, 0); // Remove extra margins
+        headerLayout->setSpacing(2); // Reduce spacing between elements
 
-    // Sender label
-    QString senderLabel = isSentByMe ? "<b>Me</b>" : "<b>" + QString::fromStdString(message.sender_username) + "</b>";
-    QLabel* usernameLabel = new QLabel(senderLabel);
-    usernameLabel->setStyleSheet("font-size: 12px; color: #333333;");
-    usernameLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        // Sender label
+        QString senderLabel = "<b>" + QString::fromStdString(message.sender_username) + "</b>";
+        QLabel* usernameLabel = new QLabel(senderLabel);
+        usernameLabel->setStyleSheet("font-size: 12px; color: #333333;"); // Adjust color as needed
+        usernameLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
-    // Timestamp label
-    QDateTime dateTime = QDateTime::fromSecsSinceEpoch(static_cast<qint64>(message.timestamp));
-    QString formattedTime = dateTime.toLocalTime().toString("yyyy-MM-dd hh:mm:ss");
-    QLabel* timestampLabel = new QLabel(formattedTime);
-    timestampLabel->setStyleSheet("color: gray; font-size: 10px;");
-    timestampLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        headerLayout->addWidget(usernameLabel);
+        headerLayout->addStretch(); // Push the username to the left
 
-    headerLayout->addWidget(usernameLabel);
-    headerLayout->addStretch();
-    headerLayout->addWidget(timestampLabel);
-
-    bubbleLayout->addLayout(headerLayout);
+        bubbleLayout->addLayout(headerLayout);
+    }
 
     // Optional picture
     if (!message.image_arr.empty()) {
@@ -1013,12 +1045,18 @@ QWidget* MainWindow::createChatMessageWidget(const ChatMessage& message)
     }
 
     // Message text at the bottom
-    QString messageText = QString::fromStdString(message.message_content);
+    QString messageText = QString::fromStdString(message.message_content).trimmed();
     if (!messageText.isEmpty()) {
         QLabel* textLabel = new QLabel(messageText);
         textLabel->setWordWrap(true);
-        textLabel->setStyleSheet("color: #000000; font-size: 14px;");
+        // Added padding-top and padding-bottom for increased vertical padding
+        textLabel->setStyleSheet(isSentByMe
+                                     ? "color: #FFFFFF; font-size: 15px; margin: 0px; padding-top: 4px; padding-bottom: 4px; padding-left: 0px; padding-right: 0px;"
+                                     : "color: #333333; font-size: 15px; margin: 0px; padding-top: 4px; padding-bottom: 4px; padding-left: 0px; padding-right: 0px;");
         textLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        textLabel->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+        textLabel->setContentsMargins(0, 0, 0, 0); // Ensure no extra margins are applied
+
         bubbleLayout->addWidget(textLabel);
     }
 
@@ -1033,6 +1071,8 @@ QWidget* MainWindow::createChatMessageWidget(const ChatMessage& message)
 
     return messageWidget;
 }
+
+
 
 
 void MainWindow::appendMessageToChat(const ChatMessage& message)
@@ -1397,19 +1437,19 @@ MainWindow::MainWindow(QWidget *parent)
     ui->login_background->setAutoFillBackground(true);
     ui->login_background->setPalette(palette);
 
-    QFrame* line = new QFrame(this);
+    line = new QFrame(this);
     line->setGeometry(629, 104, 2, 596);
     line->setFrameShape(QFrame::VLine);
     line->setFrameShadow(QFrame::Plain);
     line->show();
 
-    QFrame* line2 = new QFrame(this);
+    line2 = new QFrame(this);
     line2->setGeometry(837, 338, 280, 2);
     line2->setFrameShape(QFrame::HLine);
     line2->setFrameShadow(QFrame::Plain);
     line2->show();
 
-    QFrame* line3 = new QFrame(this);
+    line3 = new QFrame(this);
     line3->setGeometry(837, 428, 280, 2);
     line3->setFrameShape(QFrame::HLine);
     line3->setFrameShadow(QFrame::Plain);
@@ -1436,25 +1476,21 @@ MainWindow::MainWindow(QWidget *parent)
     parentLayout->setSpacing(0);
     ui->TextBrowserParentWidget->setLayout(parentLayout);
 
-    // Initialize chatScrollArea
     chatScrollArea = new QScrollArea(ui->TextBrowserParentWidget);
     chatScrollArea->setWidgetResizable(true);
     chatScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     chatScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     parentLayout->addWidget(chatScrollArea);
 
-    // Initialize messagesContainerWidget
     messagesContainerWidget = new QWidget();
     chatScrollArea->setWidget(messagesContainerWidget);
 
-    // Initialize containerLayout
     containerLayout = new QVBoxLayout(messagesContainerWidget);
     containerLayout->setAlignment(Qt::AlignTop);
     containerLayout->setContentsMargins(10, 10, 10, 10);
     containerLayout->setSpacing(10);
     messagesContainerWidget->setLayout(containerLayout);
 
-    // Add chatScrollArea to the main layout
 
 
 
