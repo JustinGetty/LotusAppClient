@@ -38,6 +38,7 @@ public:
     std::vector<ChatMessage> get_messages_from_memory(const int &convo_id);
     void set_user_id(int user_id);
     int get_user_id();
+    void append_to_mem_struct(int convo_id, ChatMessage mess);
 
 private:
     int message_manager_socket;

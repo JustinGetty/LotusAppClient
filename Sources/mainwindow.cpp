@@ -161,14 +161,21 @@ void MainWindow::handleSendMessageButtonClicked()
     isProcessing = true;
 
     ui->Send_Message_Button->setEnabled(false);
-    user_message = ui->Message_Input_Label->toPlainText();
+    QString user_message = ui->Message_Input_Label->toPlainText();
     ui->Message_Input_Label->clear();
     std::string messi = user_message.toStdString();
+
+    if (messi.empty() && image_size == 0) {
+        // No message content or image to send
+        ui->Send_Message_Button->setEnabled(true);
+        isProcessing = false;
+        return;
+    }
 
     message.message_content = messi;
     message.conversation_id = convo_id_qstr.toInt();
     message.timestamp = std::time(nullptr);
-    message.message_id = -1;
+    message.message_id = -1; // Assuming -1 indicates a new message
     message.sender_id = active_user->get_user_id();
     message.sender_username = active_user->get_active_user_username();
 
@@ -184,7 +191,9 @@ void MainWindow::handleSendMessageButtonClicked()
         send(messageManager->get_message_manager_socket(), image_data.constData(), image_size, 0);
     }
 
-    addMessageToTextBrowser(message);
+    // Append the message to the UI
+    appendMessageToChat(message);
+    messageManager->append_to_mem_struct(message.conversation_id, message);
 
     ui->Send_Message_Button->setEnabled(true);
     isProcessing = false;
@@ -358,6 +367,7 @@ void MainWindow::switch_to_main_view_after_login()
 {
     //re-render main friends and others here
     ui->login_window->hide();
+
     ui->main_window->show();
 }
 
@@ -844,6 +854,7 @@ void MainWindow::set_conversations_main_page()
         );
 }
 
+
 void MainWindow::handle_switch_to_chat_button(const int &convo_id)
 {
     std::cout << "Switched to chat with conversation ID: " << convo_id << std::endl;
@@ -858,22 +869,12 @@ void MainWindow::handle_switch_to_chat_button(const int &convo_id)
     std::vector<ChatMessage> chat_logs = messageManager->get_messages_from_memory(convo_id);
     std::cout << "Retrieved " << chat_logs.size() << " messages from memory." << std::endl;
 
-    // Clear existing layout and widgets in TextBrowserParentWidget
-    QVBoxLayout* parentLayout = qobject_cast<QVBoxLayout*>(ui->TextBrowserParentWidget->layout());
-    if (parentLayout) {
-        // Remove and delete all widgets from the layout
-        while (QLayoutItem* item = parentLayout->takeAt(0)) {
-            if (QWidget* widget = item->widget()) {
-                widget->setParent(nullptr);
-                widget->deleteLater(); // Ensure proper deletion
-            }
-            delete item;
-        }
+    // Clear existing widgets in messages container
+    if (containerLayout) {
+        clearLayout(containerLayout);
     } else {
-        // If no layout exists, create a new QVBoxLayout
-        parentLayout = new QVBoxLayout(ui->TextBrowserParentWidget);
-        parentLayout->setAlignment(Qt::AlignTop);
-        ui->TextBrowserParentWidget->setLayout(parentLayout);
+        qDebug() << "containerLayout is nullptr!";
+        // Handle error if necessary
     }
 
     // Check if there are any messages in the conversation
@@ -884,32 +885,32 @@ void MainWindow::handle_switch_to_chat_button(const int &convo_id)
         ui->EmptyChatLabel->hide();
 
         // Iterate through each ChatMessage and add it to the UI
-        for(const auto& message : chat_logs)
+        for (const auto& message : chat_logs)
         {
             // Create a widget for the chat message
             QWidget* messageWidget = createChatMessageWidget(message);
 
-            // Add the message widget to the parent layout
-            parentLayout->addWidget(messageWidget);
+            // Add the message widget to the container layout
+            containerLayout->addWidget(messageWidget);
         }
 
-        // Optionally, add a spacer to push messages to the top
-        parentLayout->addStretch();
+        // Remove any stretch at the end to prevent messages from being pushed apart
+        // Do not add containerLayout->addStretch();
     }
 
     // Embed the conversation ID into the Send_Message_Button for later use
     ui->Send_Message_Button->setProperty("embed_convo_id", convo_id);
 
     // Scroll to the bottom to display the latest message
-    QWidget* parentWidget = ui->TextBrowserParentWidget->parentWidget();
-    QScrollArea* scrollArea = qobject_cast<QScrollArea*>(parentWidget);
-    if (scrollArea) {
-        QTimer::singleShot(100, scrollArea, [scrollArea]() {
-            scrollArea->verticalScrollBar()->setValue(scrollArea->verticalScrollBar()->maximum());
-        });
-    }
-
+    QTimer::singleShot(100, this, [this]() {
+        if (chatScrollArea && chatScrollArea->verticalScrollBar()) {
+            chatScrollArea->verticalScrollBar()->setValue(chatScrollArea->verticalScrollBar()->maximum());
+        }
+    });
 }
+
+
+
 
 int MainWindow::get_push_button_embed_id()
 {
@@ -918,81 +919,145 @@ int MainWindow::get_push_button_embed_id()
     return embedded_id_int;
 }
 
-QWidget* MainWindow::createChatMessageWidget(ChatMessage message)
+void MainWindow::clearLayout(QLayout* layout)
 {
-    QWidget* messageWidget = new QWidget(this);
-    QByteArray imageData(reinterpret_cast<const char*>(message.image_arr.data()), static_cast<int>(message.image_arr.size()));
-    QPixmap pixmap_temp;
-    pixmap_temp.loadFromData(imageData);
-    int image_height = pixmap_temp.height();
-    messageWidget->setProperty("messageId", QVariant(message.message_id));
-    messageWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
-    messageWidget->setMinimumHeight(image_height + 5);
+    if (!layout)
+        return;
 
-    // Main vertical layout
-    QVBoxLayout* mainLayout = new QVBoxLayout(messageWidget);
-    mainLayout->setContentsMargins(10, 10, 10, 10);
+    while (QLayoutItem* item = layout->takeAt(0)) {
+        if (QWidget* widget = item->widget()) {
+            delete widget; // Delete the widget immediately
+        } else if (QLayout* childLayout = item->layout()) {
+            clearLayout(childLayout); // Recursively clear child layouts
+            delete childLayout; // Delete the child layout
+        }
+        delete item; // Delete the layout item
+    }
+}
+
+
+QWidget* MainWindow::createChatMessageWidget(const ChatMessage& message)
+{
+    // Create the main widget for the message bubble
+    QWidget* messageWidget = new QWidget();
+    messageWidget->setProperty("messageId", QVariant(message.message_id));
+    messageWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum); // Prevent vertical stretching
+
+    // Create the main layout (horizontal) to align messages left or right
+    QHBoxLayout* mainLayout = new QHBoxLayout(messageWidget);
+    mainLayout->setContentsMargins(10, 5, 10, 5);
     mainLayout->setSpacing(5);
+
+    // Determine if the message is sent or received
+    bool isSentByMe = (message.sender_username == active_user->get_active_user_username());
+
+    // Create a container widget for the message content (bubble)
+    QWidget* bubbleWidget = new QWidget();
+    bubbleWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum); // Prevent vertical stretching
+    bubbleWidget->setMaximumWidth(400); // Adjust as needed
+
+    // Set background color depending on sender
+    QString bubbleStyle = isSentByMe
+                              ? "background-color: #DCF8C6; border-radius: 10px; padding: 10px;"
+                              : "background-color: #FFFFFF; border-radius: 10px; padding: 10px;";
+    bubbleWidget->setStyleSheet(bubbleStyle);
+
+    // Create a vertical layout for the bubbleWidget
+    QVBoxLayout* bubbleLayout = new QVBoxLayout(bubbleWidget);
+    bubbleLayout->setContentsMargins(5, 5, 5, 5);
+    bubbleLayout->setSpacing(5);
 
     // Header layout (username and timestamp)
     QHBoxLayout* headerLayout = new QHBoxLayout();
 
-    // Determine sender label
-    QString senderLabel;
-    if(message.sender_username == active_user->get_active_user_username()) {
-        senderLabel = "<b>Me</b>";
-    } else {
-        senderLabel = "<b>" + QString::fromStdString(message.sender_username) + "</b>";
-    }
-
-    QLabel* usernameLabel = new QLabel(senderLabel, messageWidget);
+    // Sender label
+    QString senderLabel = isSentByMe ? "<b>Me</b>" : "<b>" + QString::fromStdString(message.sender_username) + "</b>";
+    QLabel* usernameLabel = new QLabel(senderLabel);
     usernameLabel->setStyleSheet("font-size: 12px; color: #333333;");
+    usernameLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
-    QLabel* timestampLabel = new QLabel();
+    // Timestamp label
     QDateTime dateTime = QDateTime::fromSecsSinceEpoch(static_cast<qint64>(message.timestamp));
     QString formattedTime = dateTime.toLocalTime().toString("yyyy-MM-dd hh:mm:ss");
-    timestampLabel->setText(formattedTime);
+    QLabel* timestampLabel = new QLabel(formattedTime);
     timestampLabel->setStyleSheet("color: gray; font-size: 10px;");
+    timestampLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
-    // Add username and timestamp to header layout
     headerLayout->addWidget(usernameLabel);
     headerLayout->addStretch();
     headerLayout->addWidget(timestampLabel);
 
-    mainLayout->addLayout(headerLayout);
-
-    // Message text
-    QString messageText = QString::fromStdString(message.message_content);
-    QLabel* textLabel = new QLabel(messageText, messageWidget);
-    textLabel->setWordWrap(true);
-    textLabel->setStyleSheet("color: #000000; font-size: 14px;");
-    mainLayout->addWidget(textLabel);
+    bubbleLayout->addLayout(headerLayout);
 
     // Optional picture
     if (!message.image_arr.empty()) {
         QByteArray imageData(reinterpret_cast<const char*>(message.image_arr.data()), static_cast<int>(message.image_arr.size()));
         QPixmap pixmap;
         if (pixmap.loadFromData(imageData)) {
-            QLabel* pictureLabel = new QLabel(messageWidget);
-            pictureLabel->setPixmap(pixmap);
-            pictureLabel->setAlignment(Qt::AlignLeft);
-            pictureLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred); // Allow picture to expand as needed
-            mainLayout->addWidget(pictureLabel);
+            QLabel* pictureLabel = new QLabel();
+            pictureLabel->setAlignment(Qt::AlignCenter);
+            pictureLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
+            // Scale image to fit within the bubble
+            int maxWidth = bubbleWidget->maximumWidth() - 20; // Adjust for padding
+            QPixmap scaledPixmap = pixmap.scaledToWidth(maxWidth, Qt::SmoothTransformation);
+            pictureLabel->setPixmap(scaledPixmap);
+
+            bubbleLayout->addWidget(pictureLabel);
         } else {
-            QLabel* errorLabel = new QLabel("[Failed to load image]", messageWidget);
+            QLabel* errorLabel = new QLabel("[Failed to load image]");
             errorLabel->setStyleSheet("color: red; font-style: italic;");
-            mainLayout->addWidget(errorLabel);
+            errorLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+            bubbleLayout->addWidget(errorLabel);
         }
     }
 
-    // Optional: Add a separator line
-    QFrame* separator = new QFrame(messageWidget);
-    separator->setFrameShape(QFrame::HLine);
-    separator->setFrameShadow(QFrame::Sunken);
-    mainLayout->addWidget(separator);
+    // Message text at the bottom
+    QString messageText = QString::fromStdString(message.message_content);
+    if (!messageText.isEmpty()) {
+        QLabel* textLabel = new QLabel(messageText);
+        textLabel->setWordWrap(true);
+        textLabel->setStyleSheet("color: #000000; font-size: 14px;");
+        textLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        bubbleLayout->addWidget(textLabel);
+    }
+
+    // Adjust alignment based on sender
+    if (isSentByMe) {
+        mainLayout->addStretch();
+        mainLayout->addWidget(bubbleWidget);
+    } else {
+        mainLayout->addWidget(bubbleWidget);
+        mainLayout->addStretch();
+    }
 
     return messageWidget;
 }
+
+
+void MainWindow::appendMessageToChat(const ChatMessage& message)
+{
+    if (!containerLayout) {
+        qDebug() << "containerLayout is nullptr!";
+        return;
+    }
+
+    // Create a widget for the chat message
+    QWidget* messageWidget = createChatMessageWidget(message);
+
+    // Add the message widget to the container layout
+    containerLayout->addWidget(messageWidget);
+
+    // Scroll to the bottom to display the latest message
+    QTimer::singleShot(0, this, [this]() {
+        if (chatScrollArea && chatScrollArea->verticalScrollBar()) {
+            chatScrollArea->verticalScrollBar()->setValue(chatScrollArea->verticalScrollBar()->maximum());
+        }
+    });
+}
+
+
+
 
 void MainWindow::addMessageToTextBrowser(ChatMessage message)
 {
@@ -1364,6 +1429,32 @@ MainWindow::MainWindow(QWidget *parent)
 
 
 
+    /*-----Main Message Area Setup---------*/
+    // In your MainWindow constructor or initialization function
+    parentLayout = new QVBoxLayout(ui->TextBrowserParentWidget);
+    parentLayout->setContentsMargins(0, 0, 0, 0);
+    parentLayout->setSpacing(0);
+    ui->TextBrowserParentWidget->setLayout(parentLayout);
+
+    // Initialize chatScrollArea
+    chatScrollArea = new QScrollArea(ui->TextBrowserParentWidget);
+    chatScrollArea->setWidgetResizable(true);
+    chatScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    chatScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    parentLayout->addWidget(chatScrollArea);
+
+    // Initialize messagesContainerWidget
+    messagesContainerWidget = new QWidget();
+    chatScrollArea->setWidget(messagesContainerWidget);
+
+    // Initialize containerLayout
+    containerLayout = new QVBoxLayout(messagesContainerWidget);
+    containerLayout->setAlignment(Qt::AlignTop);
+    containerLayout->setContentsMargins(10, 10, 10, 10);
+    containerLayout->setSpacing(10);
+    messagesContainerWidget->setLayout(containerLayout);
+
+    // Add chatScrollArea to the main layout
 
 
 

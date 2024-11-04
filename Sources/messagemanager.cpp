@@ -122,7 +122,7 @@ std::vector<ChatMessage> messagemanager::pull_all_chat_messages(int client_socke
                         }
                         total_received += bytes_received;
                     }
-                    chat_message.image_arr = std::move(image_data);
+                    chat_message.image_arr = std::move(image_data); // issue in debugger
                 }
 
                 chat_log.push_back(chat_message); // Add completed message to the log
@@ -311,6 +311,11 @@ std::vector<ChatMessage> messagemanager::get_messages_from_memory(const int &con
     }
 
     return chat_specific_logs;
+}
+
+void messagemanager::append_to_mem_struct(int convo_id, ChatMessage mess)
+{
+    message_memory_structure.insert({convo_id, mess});
 }
 
 

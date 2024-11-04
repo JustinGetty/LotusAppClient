@@ -78,7 +78,7 @@ background-color: #444444;
 }</string>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="settings_window">
      <property name="styleSheet">
@@ -1676,7 +1676,7 @@ border-color: #4682b4;
 }</string>
         </property>
         <property name="text">
-         <string>Login</string>
+         <string>Login Now</string>
         </property>
        </widget>
        <widget class="QLabel" name="already_have_an_account">

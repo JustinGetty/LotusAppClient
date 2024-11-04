@@ -119,9 +119,15 @@ private:
     void destruct_image_display();
     bool active_image_display_flag = false;
     QByteArray image_send_temp;
-    QWidget* createChatMessageWidget(ChatMessage message);
+    QWidget* createChatMessageWidget(const ChatMessage& messag);
     bool isDragging = false;
     QPoint dragStartPosition;
+    QScrollArea* chatScrollArea = nullptr;
+    QWidget* messagesContainerWidget = nullptr;
+    void clearLayout(QLayout* layout);
+    QVBoxLayout* parentLayout = nullptr;
+    QVBoxLayout* containerLayout = nullptr;
+    void appendMessageToChat(const ChatMessage& message);
 
 protected:
     //void keyPressEvent(QKeyEvent *event) override;  // Declaration in the header file
