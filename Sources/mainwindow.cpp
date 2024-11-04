@@ -344,7 +344,7 @@ void MainWindow::on_login_account_button_clicked()
 void MainWindow::set_mainview_objects_tot()
 {
     QString username_text = "User signed in: " + QString::fromStdString(active_user->get_active_user_username());
-    ui->active_user_label->setText(username_text);
+    //ui->active_user_label->setText(username_text);
     relationsManager->update_conversations_glob();
     set_conversations_main_page();
     QPixmap pixmap = active_user->get_profile_pic_pmap();
@@ -1437,6 +1437,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->login_background->setAutoFillBackground(true);
     ui->login_background->setPalette(palette);
 
+
     line = new QFrame(this);
     line->setGeometry(629, 104, 2, 596);
     line->setFrameShape(QFrame::VLine);
@@ -1492,7 +1493,12 @@ MainWindow::MainWindow(QWidget *parent)
     messagesContainerWidget->setLayout(containerLayout);
 
 
+    /*-----Main Window Gen Setup*/
 
+
+    QIcon new_convo_icon("/Users/justin/the_harbor/Chat/ChatWidget/LotusAppClient/Resources/square-pencil-draw-edit-512.png");
+    ui->NewConversationButton->setIcon(new_convo_icon);
+    ui->NewConversationButton->setIconSize(QSize(ui->NewConversationButton->width(), ui->NewConversationButton->height()));
 
 
     /*---- END UI SETUP--------*/
