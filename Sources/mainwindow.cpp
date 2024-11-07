@@ -5,6 +5,7 @@
 
 /*
  TODO:
+    2. Add logo to background of chat interface faded
     3. Implement async thread for inbound friend requests, same as messages, online flag on server side
     4. Add loading buffers and animations while content/data is loading/connecting
     5. error handling (where comments denote)
