@@ -26,6 +26,7 @@ std::vector<ChatMessage> messagemanager::pull_all_chat_messages(int client_socke
     if (bytes_sent <= -1)
     {
         std::cerr << "Error sending chat retrieval request." << std::endl;
+        is_receiving = true;
         return empty_chat_log;
     }
 
@@ -39,16 +40,19 @@ std::vector<ChatMessage> messagemanager::pull_all_chat_messages(int client_socke
         if (status_bytes < 0)
         {
             std::cerr << "Error receiving data from server." << std::endl;
+            is_receiving = true;
             return empty_chat_log;
         }
         else if (status_bytes == 0)
         {
             std::cerr << "Chat log connection closed by server." << std::endl;
+            is_receiving = true;
             return empty_chat_log;
         }
         else if (status_bytes == 1)
         {
             std::cout << "Termination signal received. Ending reception." << std::endl;
+            is_receiving = true;
             return chat_log;
 
         }
@@ -58,6 +62,7 @@ std::vector<ChatMessage> messagemanager::pull_all_chat_messages(int client_socke
         if (buffer == "\\#" || buffer == "\#" || buffer_data[0] == '#')
         {
             std::cout << "Termination signal received. Ending reception." << std::endl;
+            is_receiving = true;
             return chat_log;
         }
 
@@ -118,6 +123,7 @@ std::vector<ChatMessage> messagemanager::pull_all_chat_messages(int client_socke
                         if (bytes_received <= 0)
                         {
                             std::cerr << "ERROR: Failed to receive image data." << std::endl;
+                            is_receiving = true;
                             return empty_chat_log;
                         }
                         total_received += bytes_received;
@@ -138,12 +144,13 @@ std::vector<ChatMessage> messagemanager::pull_all_chat_messages(int client_socke
             if (message == "\\#" || message == "\#")
             {
                 std::cout << "Termination signal received. Ending reception." << std::endl;
+                is_receiving = true;
                 return chat_log;
             }
         }
     }
-    return chat_log;
     is_receiving = true;
+    return chat_log;
 }
 
 
@@ -190,21 +197,23 @@ void messagemanager::async_receive_messages(const int &message_manager_socket, M
     //thread to recieve
     // Thread to continuously receive messages from the server
 
+    std::cout << "async thread up" << std::endl;
     std::string buffer_data;
 
     while (true) {
 
         std::cout << "ASYNC THREAD CALLED" << std::endl;
 
-        if (!is_receiving) {
+        while (!is_receiving) {
             std::cout << "Sleepign async thread" << std::endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            break;
         }
 
         // Receiving data in chunks
         char buffer[999] = {0};
         ssize_t status_bytes = recv(message_manager_socket, buffer, sizeof(buffer) - 1, 0);
+
+        std::cout << "Message Received" << std::endl;
 
         if (status_bytes < 0) {
             std::cerr << "Error receiving data from server." << std::endl;
@@ -223,17 +232,21 @@ void messagemanager::async_receive_messages(const int &message_manager_socket, M
         size_t pos;
         while ((pos = buffer_data.find("\\|")) != std::string::npos) {
             // Extract and remove the message from buffer_data
-            std::string message = buffer_data.substr(0, pos);
-            buffer_data.erase(0, pos + 2);  // Remove the message plus delimiter
+            std::string message = buffer_data.substr(0, pos + 3);
+
+            if (message[0] == '#')
+            {
+                message.erase(0, 1);
+            }
 
             // Parse message components
             std::string unix_timestamp_str = message.substr(0, message.find("\\+"));
             std::string sender_username = extract_between(message, "\\+", "\\-");
             std::string sender_id_str = extract_between(message, "\\-", "\\]");
             std::string conversation_id_str = extract_between(message, "\\]", "\\[");
-            std::string message_content = extract_between(message, "\\[", "\\&");
-            std::string message_id_str = extract_between(message, "\\$", "\\~");
-            std::string image_size_str = extract_between(message, "\\~", "\\|");
+            std::string message_content = extract_between(message, "\\[", "\\$");
+            std::string image_size_str = extract_between(message, "\\$", "\\&");
+            std::string message_id_str = extract_between(message, "\\&", "\\|");
 
             // Convert parsed strings to appropriate types
             ChatMessage chat_message;
@@ -260,13 +273,16 @@ void messagemanager::async_receive_messages(const int &message_manager_socket, M
                 chat_message.image_arr = std::move(image_data);  // Transfer image data to chat_message
             }
 
+            append_to_mem_struct(chat_message.conversation_id, chat_message);
             // Display or notify user based on sender and chat status
             int sender_id_global = std::stoi(sender_id_str);  // Assuming sender_id_global is required here
+
+            QMetaObject::invokeMethod(mainWindow, "appendMessageToChat", Qt::QueuedConnection, Q_ARG(ChatMessage, chat_message));
+
             if (mainWindow->get_push_button_embed_id() == sender_id_global) {
                 // Use Qt's signal-slot mechanism to update UI in main thread
-                std::string display_message = unix_timestamp_str + " " + sender_username + ": " + message_content;
-                QString qMessage = QString::fromStdString(display_message);
-                QMetaObject::invokeMethod(mainWindow, "addMessageToTextBrowser", Qt::QueuedConnection, Q_ARG(QString, qMessage));
+
+                //QMetaObject::invokeMethod(mainWindow, "addMessageToChat", Qt::QueuedConnection, Q_ARG(ChatMessage, chat_message));
             } else {
                 // If not in chat, show notification and add to memory logs (custom logic here)
                 //mainWindow->showNotification(sender_username, message_content);

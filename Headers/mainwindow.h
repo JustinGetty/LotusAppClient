@@ -127,7 +127,6 @@ private:
     void clearLayout(QLayout* layout);
     QVBoxLayout* parentLayout = nullptr;
     QVBoxLayout* containerLayout = nullptr;
-    void appendMessageToChat(const ChatMessage& message);
     QFrame* line = nullptr;
     QFrame* line2 = nullptr;
     QFrame* line3 = nullptr;
@@ -143,6 +142,7 @@ protected:
 signals:
 public slots:
     void addMessageToTextBrowser(ChatMessage message);
+    void appendMessageToChat(const ChatMessage& message);
 
 };
 

@@ -862,6 +862,7 @@ void MainWindow::set_conversations_main_page()
 void MainWindow::handle_switch_to_chat_button(const int &convo_id)
 {
     std::cout << "Switched to chat with conversation ID: " << convo_id << std::endl;
+    std::vector<ChatMessage> chat_logs;
 
     // Update UI elements visibility
     ui->EmptyChatLabel->hide();
@@ -903,7 +904,7 @@ void MainWindow::handle_switch_to_chat_button(const int &convo_id)
         );
 
     // Retrieve chat logs from memory
-    std::vector<ChatMessage> chat_logs = messageManager->get_messages_from_memory(convo_id);
+    chat_logs = messageManager->get_messages_from_memory(convo_id);
     std::cout << "Retrieved " << chat_logs.size() << " messages from memory." << std::endl;
 
     // Clear existing widgets in messages container
