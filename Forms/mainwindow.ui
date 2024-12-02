@@ -745,6 +745,12 @@ li.checked::marker { content: &quot;\2612&quot;; }
          <height>658</height>
         </rect>
        </property>
+       <property name="styleSheet">
+        <string notr="true">QWidget
+{
+background-color: #fcfcfb;
+}</string>
+       </property>
        <widget class="QLabel" name="EmptyChatLabel">
         <property name="geometry">
          <rect>
@@ -941,11 +947,17 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <widget class="QScrollArea" name="scrollAreaMainPageFriends">
         <property name="geometry">
          <rect>
-          <x>12</x>
+          <x>0</x>
           <y>105</y>
-          <width>365</width>
-          <height>657</height>
+          <width>388</width>
+          <height>670</height>
          </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QScrollArea
+{
+border-radius: 0;
+}</string>
         </property>
         <property name="widgetResizable">
          <bool>true</bool>
@@ -955,13 +967,13 @@ li.checked::marker { content: &quot;\2612&quot;; }
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>365</width>
-           <height>657</height>
+           <width>388</width>
+           <height>670</height>
           </rect>
          </property>
         </widget>
        </widget>
-       <widget class="QLineEdit" name="lineEdit">
+       <widget class="QLineEdit" name="search_bar">
         <property name="geometry">
          <rect>
           <x>67</x>
@@ -1024,6 +1036,12 @@ li.checked::marker { content: &quot;\2612&quot;; }
          <string/>
         </property>
        </widget>
+       <zorder>add_friend_window_btn</zorder>
+       <zorder>profile_pic_main_label</zorder>
+       <zorder>scrollAreaMainPageFriends</zorder>
+       <zorder>RefreshConversations</zorder>
+       <zorder>NewConversationButton</zorder>
+       <zorder>search_bar</zorder>
       </widget>
       <widget class="QPushButton" name="to_settings_from_main_btn">
        <property name="geometry">
@@ -1043,12 +1061,29 @@ li.checked::marker { content: &quot;\2612&quot;; }
         <string>Settings</string>
        </property>
       </widget>
+      <widget class="QWidget" name="widget_2" native="true">
+       <property name="geometry">
+        <rect>
+         <x>388</x>
+         <y>690</y>
+         <width>950</width>
+         <height>89</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QWidget
+{
+background-color: #fcfcfb;
+}</string>
+       </property>
+      </widget>
       <zorder>main_left_panel_frame</zorder>
       <zorder>TextBrowserParentWidget</zorder>
-      <zorder>Send_Message_Button</zorder>
-      <zorder>Message_Input_Label</zorder>
-      <zorder>uploadButton</zorder>
       <zorder>to_settings_from_main_btn</zorder>
+      <zorder>widget_2</zorder>
+      <zorder>Message_Input_Label</zorder>
+      <zorder>Send_Message_Button</zorder>
+      <zorder>uploadButton</zorder>
      </widget>
     </widget>
     <widget class="QWidget" name="login_window">
@@ -1985,7 +2020,7 @@ color: #000000;
       <x>0</x>
       <y>0</y>
       <width>1337</width>
-      <height>30</height>
+      <height>36</height>
      </rect>
     </property>
     <property name="styleSheet">

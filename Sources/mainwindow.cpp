@@ -614,6 +614,8 @@ QWidget* MainWindow::createFriendWidget(const QString &labelText, const int &use
     return frame;
 }
 */
+
+//friends widget on main page
 QWidget* MainWindow::createMainConversationWidget(std::vector<std::pair<std::string, int>> iso_convo)
 {
 
@@ -824,38 +826,74 @@ void MainWindow::set_conversations_main_page()
 
     scrollWidget->setLayout(scrollLayout);
     ui->scrollAreaMainPageFriends->setWidget(scrollWidget);
+    ui->scrollAreaMainPageFriends->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->scrollAreaMainPageFriends->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->scrollAreaMainPageFriends->setStyleSheet(
+        "QScrollArea {"
+        "    border-radius: 0px;"         // Ensures no rounded corners on the scroll area
+        "    background: #ffffff;"       // Set consistent background color
+        "    border: 1px solid #dcdcdc;" // Border for the scroll area
+        "}"
+        "QScrollArea > QWidget > QWidget {"
+        "    border-radius: 0px;"         // Ensures no rounded corners for the viewport
+        "    background: #ffffff;"       // Match background color
+        "}"
         "QScrollBar:vertical {"
-        "    background: #f0f0f0;"         // Background color of the scrollbar
-        "    width: 12px;"                 // Width of the vertical scrollbar
-        "    margin: 0px 0px 0px 0px;"     // Margins
-        "    border: 1px solid #dcdcdc;"   // Border around the scrollbar
+        "    background: #f0f0f0;"        // Background color of the vertical scrollbar
+        "    width: 12px;"                // Width of the vertical scrollbar
+        "    margin: 0px 0px 0px 0px;"    // Margins
+        "    border: 1px solid #dcdcdc;"  // Border around the scrollbar
         "}"
         "QScrollBar::handle:vertical {"
-        "    background: #b0b0b0;"         // Color of the handle
-        "    min-height: 20px;"            // Minimum height of the handle
-        "    border-radius: 4px;"          // Rounded corners
+        "    background: #b0b0b0;"        // Color of the handle
+        "    min-height: 20px;"           // Minimum height of the handle
+        "    border-radius: 4px;"         // Rounded corners
         "}"
         "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
-        "    height: 0px;"                 // Removes the up and down arrow buttons
+        "    height: 0px;"                // Removes the up and down arrow buttons
         "    subcontrol-origin: margin;"
         "}"
         "QScrollBar:horizontal {"
-        "    background: #f0f0f0;"         // Background color of the horizontal scrollbar
-        "    height: 12px;"                // Height of the horizontal scrollbar
-        "    margin: 0px 0px 0px 0px;"     // Margins
-        "    border: 1px solid #dcdcdc;"   // Border around the scrollbar
+        "    background: #f0f0f0;"        // Background color of the horizontal scrollbar
+        "    height: 12px;"               // Height of the horizontal scrollbar
+        "    margin: 0px 0px 0px 0px;"    // Margins
+        "    border: 1px solid #dcdcdc;"  // Border around the scrollbar
         "}"
         "QScrollBar::handle:horizontal {"
-        "    background: #b0b0b0;"         // Color of the handle
-        "    min-width: 20px;"             // Minimum width of the handle
-        "    border-radius: 4px;"          // Rounded corners
+        "    background: #b0b0b0;"        // Color of the handle
+        "    min-width: 20px;"            // Minimum width of the handle
+        "    border-radius: 4px;"         // Rounded corners
         "}"
         "QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {"
-        "    width: 0px;"                  // Removes the left and right arrow buttons
+        "    width: 0px;"                 // Removes the left and right arrow buttons
         "    subcontrol-origin: margin;"
         "}"
         );
+
+    ui->scrollAreaMainPageFriends->verticalScrollBar()->hide();
+    ui->scrollAreaMainPageFriends->horizontalScrollBar()->hide();
+
+    // Create a timer to auto-hide the scrollbars
+    QTimer *hideScrollBarTimer = new QTimer(this);
+    hideScrollBarTimer->setInterval(2000); // Hide after 2 seconds of inactivity
+    hideScrollBarTimer->setSingleShot(true);
+
+    // Connect the scroll bar signals to show them on interaction
+    connect(ui->scrollAreaMainPageFriends->verticalScrollBar(), &QScrollBar::valueChanged, this, [=]() {
+        ui->scrollAreaMainPageFriends->verticalScrollBar()->show();
+        hideScrollBarTimer->start(); // Restart timer on every scroll
+    });
+
+    connect(ui->scrollAreaMainPageFriends->horizontalScrollBar(), &QScrollBar::valueChanged, this, [=]() {
+        ui->scrollAreaMainPageFriends->horizontalScrollBar()->show();
+        hideScrollBarTimer->start(); // Restart timer on every scroll
+    });
+
+    // Auto-hide scrollbars when the timer times out
+    connect(hideScrollBarTimer, &QTimer::timeout, this, [=]() {
+        ui->scrollAreaMainPageFriends->verticalScrollBar()->hide();
+        ui->scrollAreaMainPageFriends->horizontalScrollBar()->hide();
+    });
 }
 
 
