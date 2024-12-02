@@ -3,6 +3,7 @@
 
 #include <string>
 #include <QString>
+#include <mutex>
 struct Message
 {
     std::string sender;
