@@ -883,26 +883,6 @@ li.checked::marker { content: &quot;\2612&quot;; }
         <zorder>delete_image_send</zorder>
         <zorder>image_display_label</zorder>
        </widget>
-       <widget class="QPushButton" name="NewConversationButton">
-        <property name="geometry">
-         <rect>
-          <x>910</x>
-          <y>2</y>
-          <width>40</width>
-          <height>40</height>
-         </rect>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QPushButton{
-	border-width: 0;
- 	color: #000000;
-	background-color: rgba(0,0,0,0.0);
-}</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
       </widget>
       <widget class="QFrame" name="main_left_panel_frame">
        <property name="geometry">
@@ -1018,6 +998,26 @@ li.checked::marker { content: &quot;\2612&quot;; }
 {
 	border-width: 0;
 	color: #000000;
+}</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="NewConversationButton">
+        <property name="geometry">
+         <rect>
+          <x>292</x>
+          <y>25</y>
+          <width>40</width>
+          <height>40</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton{
+	border-width: 0;
+ 	color: #000000;
+	background-color: rgba(0,0,0,0.0);
 }</string>
         </property>
         <property name="text">
