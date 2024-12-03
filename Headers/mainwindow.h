@@ -130,6 +130,7 @@ private:
     QFrame* line = nullptr;
     QFrame* line2 = nullptr;
     QFrame* line3 = nullptr;
+    QWidget* createConvoSelectWidget(std::vector<std::pair<std::string, int>> conversations);
 
 protected:
     //void keyPressEvent(QKeyEvent *event) override;  // Declaration in the header file

@@ -616,6 +616,27 @@ QWidget* MainWindow::createFriendWidget(const QString &labelText, const int &use
 */
 
 //friends widget on main page
+/*
+// Assuming you have a parent widget and a child widget inside it
+QPushButton *button = new QPushButton(parentWidget);
+button->setText("Overlay Button");
+
+// Set the button to cover the entire area of the child widget
+button->setGeometry(childWidget->geometry());
+
+// Make the button transparent
+button->setStyleSheet("background: transparent; border: none;");
+button->setFlat(true); // Optional: makes the button flat without borders or shadows
+*/
+
+//change to pass in message or connvo object. enough conflated pairs AHHHH
+QWidget* MainWindow::createConvoSelectWidget(std::vector<std::pair<std::string, int>> conversations)
+{
+    //this will replace createMainConversationWidget
+
+}
+
+
 QWidget* MainWindow::createMainConversationWidget(std::vector<std::pair<std::string, int>> iso_convo)
 {
 
