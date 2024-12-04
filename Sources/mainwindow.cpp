@@ -633,6 +633,25 @@ button->setFlat(true); // Optional: makes the button flat without borders or sha
 QWidget* MainWindow::createConvoSelectWidget(std::vector<std::pair<std::string, int>> conversations)
 {
     //this will replace createMainConversationWidget
+    QWidget *conversationWidget = new QWidget;
+    conversationWidget->setGeometry(conversationWidget->x(), conversationWidget->y(), 388, 76);
+
+    //update to pull  profile image
+    QLabel *pfpLabel = new QWidget("pfp label", conversationWidget);
+    pfpLabel->setGeometry(18, 9, 60, 60);
+    pfpLabel->setStyleSheet(
+        "QLabel {"
+            "text-align: center;"
+            "background-color: #eeeeee;"
+            "border-radius: 30px;"
+
+                "}"
+        );
+
+
+
+
+    return conversationWidget;
 
 }
 
