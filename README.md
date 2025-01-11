@@ -7,3 +7,5 @@
 4. if 3 doesnt work, run this first:
 */opt/homebrew/bin/qmake /Users/PATH_TO_FOLDER/LotusAppClient/ChatApplication.pro -spec macx-clang CONFIG+=debug CONFIG+=qml_debug && /usr/bin/make qmake_all*
 5. Run with: *./ChatApplication.app/Contents/MacOS/ChatApplication*
+
+Note: rework in progress wont connect to server atm. to just view the code start at sources/mainwindow.cpp
